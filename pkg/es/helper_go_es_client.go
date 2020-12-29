@@ -1,0 +1,127 @@
+package es
+
+import (
+	"bytes"
+	"esctl/pkg/log"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
+
+	goES "github.com/elastic/go-elasticsearch/v7"
+	"github.com/pkg/errors"
+)
+
+func newGoESClient(config *HelperConfig, logHelper log.IHelper) (*goES.Client, error) {
+	goESConfig := goES.Config{
+		Addresses: strings.Split(config.Addresses, ","),
+		Username:  config.Username,
+		Password:  config.Password,
+	}
+
+	goESConfig.Logger = newGoESClientLogger(logHelper)
+
+	if config.CertPath != "" {
+		certByteArr, err := ioutil.ReadFile(config.CertPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "config.CertPath is invalid")
+		}
+		goESConfig.CACert = certByteArr
+	}
+
+	if config.CertVerify == false {
+		httpTransportTmp := http.DefaultTransport
+		httpTransport, _ := httpTransportTmp.(*http.Transport)
+		httpTransport = httpTransport.Clone()
+		httpTransport.TLSClientConfig.InsecureSkipVerify = true
+		goESConfig.Transport = httpTransport
+	}
+
+	goESClientInst, err := goES.NewClient(goESConfig)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to goES.NewClient")
+	}
+
+	// 检查是否可访问
+	resp, err := goESClientInst.Info()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get ES Info")
+	}
+
+	defer resp.Body.Close()
+	if resp.IsError() {
+		tmpErr := errors.New(resp.String())
+		return nil, errors.Wrap(tmpErr, "failed to get ES Info")
+	}
+
+	return goESClientInst, nil
+}
+
+func newGoESClientLogger(logHelper log.IHelper) *goESClientLogger {
+	if logHelper == nil {
+		return nil
+	}
+
+	l := &goESClientLogger{logHelper: logHelper}
+	return l
+}
+
+type goESClientLogger struct {
+	logHelper log.IHelper
+}
+
+func (l *goESClientLogger) RequestBodyEnabled() bool { return true }
+
+func (l *goESClientLogger) ResponseBodyEnabled() bool { return true }
+
+func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, err error, start time.Time, dur time.Duration) error {
+	logFields := map[string]interface{}{
+		"duration": dur,
+		"request":  nil,
+		"response": nil,
+	}
+
+	if err != nil {
+		logFields["error"] = err.Error()
+	}
+
+	if req != nil {
+		// 不记录请求体
+		logFields["request"] = map[string]interface{}{
+			"method": req.Method,
+			"url":    req.URL.String(),
+		}
+	}
+
+	if resp != nil {
+		respBodyStr := ""
+		if resp.Body != nil && resp.Body != http.NoBody {
+			// 仅在发生错误时，记录响应体
+			if resp.StatusCode >= http.StatusBadRequest {
+				respBodyBuff := new(bytes.Buffer)
+				respBodyBuff.ReadFrom(resp.Body)
+				respBodyStr = respBodyBuff.String()
+			}
+		}
+
+		logFields["response"] = map[string]interface{}{
+			"status": resp.StatusCode,
+			"body":   respBodyStr,
+		}
+	}
+
+	switch {
+	case err != nil:
+		l.logHelper.Error("an error occurred", logFields)
+	case resp != nil && resp.StatusCode < http.StatusBadRequest:
+		l.logHelper.Info(resp.Status, logFields)
+	case resp != nil && resp.StatusCode >= http.StatusBadRequest && resp.StatusCode < http.StatusInternalServerError:
+		l.logHelper.Warn(resp.Status, logFields)
+	case resp != nil && resp.StatusCode >= http.StatusInternalServerError:
+		l.logHelper.Error(resp.Status, logFields)
+	default:
+		l.logHelper.Error("no response", logFields)
+	}
+
+	return nil
+}
