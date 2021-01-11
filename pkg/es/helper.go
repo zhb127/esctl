@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"esctl/pkg/log"
 
-	goES "github.com/elastic/go-elasticsearch/v7"
 	"github.com/pkg/errors"
+
+	goES "github.com/elastic/go-elasticsearch/v7"
 )
 
 type HelperConfig struct {
@@ -18,39 +19,49 @@ type HelperConfig struct {
 }
 
 type IHelper interface {
+	Client() *goES.Client
 	SaveDoc(index string, docID string, docBody []byte) error
 	DeleteDoc(index string, docID string) error
 	SearchDocs(index string, searchBody []byte) (*SearchDocsResponse, error)
 }
 
 type helper struct {
-	config     *HelperConfig
-	goESClient *goES.Client
+	config    HelperConfig
+	logHelper log.IHelper
+	rawClient *goES.Client
 }
 
-func NewHelper(config *HelperConfig, logHelper log.IHelper) (*helper, error) {
-	if config == nil {
-		return nil, errors.New("config is nil")
+func NewHelper(config HelperConfig, logHelper log.IHelper) (*helper, error) {
+
+	// 处理日志
+	if logHelper != nil {
+		logHelper = logHelper.NewChild().SetWithField("pkg", "es_helper")
 	}
 
-	goESClient, err := newGoESClient(config, logHelper)
+	// 处理 go ES 客户端
+	rawClient, err := newRawClient(config, logHelper)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to newGoESClient")
 	}
 
-	h := &helper{
-		config:     config,
-		goESClient: goESClient,
+	inst := &helper{
+		config,
+		logHelper,
+		rawClient,
 	}
 
-	return h, nil
+	return inst, nil
+}
+
+func (h *helper) Client() *goES.Client {
+	return h.rawClient
 }
 
 func (h *helper) SaveDoc(index string, docID string, docBody []byte) error {
-	resp, err := h.goESClient.Index(
+	resp, err := h.rawClient.Index(
 		index,
 		bytes.NewReader(docBody),
-		h.goESClient.Index.WithDocumentID(docID),
+		h.rawClient.Index.WithDocumentID(docID),
 	)
 	if err != nil {
 		return err
@@ -65,7 +76,7 @@ func (h *helper) SaveDoc(index string, docID string, docBody []byte) error {
 }
 
 func (h *helper) DeleteDoc(index string, docID string) error {
-	resp, err := h.goESClient.Delete(index, docID)
+	resp, err := h.rawClient.Delete(index, docID)
 	if err != nil {
 		return err
 	}
@@ -79,9 +90,10 @@ func (h *helper) DeleteDoc(index string, docID string) error {
 }
 
 func (h *helper) SearchDocs(index string, searchBody []byte) (*SearchDocsResponse, error) {
-	resp, err := h.goESClient.Search(
-		h.goESClient.Search.WithIndex(index),
-		h.goESClient.Search.WithBody(bytes.NewReader(searchBody)),
+	resp, err := h.rawClient.Search(
+		h.rawClient.Search.WithIndex(index),
+		h.rawClient.Search.WithTrackTotalHits(true),
+		h.rawClient.Search.WithBody(bytes.NewReader(searchBody)),
 	)
 	if err != nil {
 		return nil, err

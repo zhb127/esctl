@@ -16,7 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"esctl/internal/index/app"
+	"esctl/pkg/config/dotenv"
 
 	"github.com/spf13/cobra"
 )
@@ -27,7 +28,19 @@ var indexCmd = &cobra.Command{
 	Short: "Manage all indices of ES",
 	Long:  `Manage all indices of ES`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("index called")
+		flagConfigFile, err := rootCmd.PersistentFlags().GetString("config")
+		if err != nil {
+			panic(err)
+		}
+
+		if flagConfigFile != "" {
+			if err := dotenv.Load(flagConfigFile); err != nil {
+				panic(err)
+			}
+		}
+
+		app := app.New()
+		indexHandler := index.NewHandler(app)
 	},
 }
 

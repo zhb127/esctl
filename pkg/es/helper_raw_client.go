@@ -1,8 +1,8 @@
 package es
 
 import (
-	"bytes"
 	"esctl/pkg/log"
+	"esctl/pkg/util/converttype/tostr"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -12,14 +12,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func newGoESClient(config *HelperConfig, logHelper log.IHelper) (*goES.Client, error) {
+func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, error) {
 	goESConfig := goES.Config{
 		Addresses: strings.Split(config.Addresses, ","),
 		Username:  config.Username,
 		Password:  config.Password,
 	}
 
-	goESConfig.Logger = newGoESClientLogger(logHelper)
+	goESConfig.Logger = newRawClientLogger(logHelper)
 
 	if config.CertPath != "" {
 		certByteArr, err := ioutil.ReadFile(config.CertPath)
@@ -57,7 +57,7 @@ func newGoESClient(config *HelperConfig, logHelper log.IHelper) (*goES.Client, e
 	return goESClientInst, nil
 }
 
-func newGoESClientLogger(logHelper log.IHelper) *goESClientLogger {
+func newRawClientLogger(logHelper log.IHelper) *goESClientLogger {
 	if logHelper == nil {
 		return nil
 	}
@@ -86,11 +86,24 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 	}
 
 	if req != nil {
-		// 不记录请求体
+		reqBodyStr := ""
+
+		// 只记录查询请求体
+		reqUrl := req.URL.String()
+		if strings.ContainsAny(reqUrl, "_search") {
+			if req.Body != nil && req.Body != http.NoBody {
+				reqBodyStr = tostr.FromIOReadCloser(req.Body)
+			}
+		} else {
+			reqBodyStr = "skip_show_body_cause_by_not_search"
+		}
+
 		logFields["request"] = map[string]interface{}{
 			"method": req.Method,
 			"url":    req.URL.String(),
+			"body":   reqBodyStr,
 		}
+
 	}
 
 	if resp != nil {
@@ -98,9 +111,7 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 		if resp.Body != nil && resp.Body != http.NoBody {
 			// 仅在发生错误时，记录响应体
 			if resp.StatusCode >= http.StatusBadRequest {
-				respBodyBuff := new(bytes.Buffer)
-				respBodyBuff.ReadFrom(resp.Body)
-				respBodyStr = respBodyBuff.String()
+				respBodyStr = tostr.FromIOReadCloser(resp.Body)
 			}
 		}
 
