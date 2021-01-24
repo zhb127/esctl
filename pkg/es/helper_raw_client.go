@@ -19,7 +19,9 @@ func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, err
 		Password:  config.Password,
 	}
 
-	goESConfig.Logger = newRawClientLogger(logHelper)
+	if logHelper != nil {
+		goESConfig.Logger = newRawClientLogger(logHelper)
+	}
 
 	if config.CertPath != "" {
 		certByteArr, err := ioutil.ReadFile(config.CertPath)
@@ -95,7 +97,7 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 				reqBodyStr = tostr.FromIOReadCloser(req.Body)
 			}
 		} else {
-			reqBodyStr = "skip_show_body_cause_by_not_search"
+			reqBodyStr = "ignore logging request body due to it is not search request"
 		}
 
 		logFields["request"] = map[string]interface{}{

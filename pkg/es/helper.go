@@ -19,10 +19,10 @@ type HelperConfig struct {
 }
 
 type IHelper interface {
-	Client() *goES.Client
 	SaveDoc(index string, docID string, docBody []byte) error
 	DeleteDoc(index string, docID string) error
-	SearchDocs(index string, searchBody []byte) (*SearchDocsResponse, error)
+	SearchDocs(index string, condsBody []byte) (*SearchDocsResponse, error)
+	CatIndices() ([]CatIndicesItemResponse, error)
 }
 
 type helper struct {
@@ -31,8 +31,7 @@ type helper struct {
 	rawClient *goES.Client
 }
 
-func NewHelper(config HelperConfig, logHelper log.IHelper) (*helper, error) {
-
+func NewHelper(config HelperConfig, logHelper log.IHelper) (IHelper, error) {
 	// 处理日志
 	if logHelper != nil {
 		logHelper = logHelper.NewChild().SetWithField("pkg", "es_helper")
@@ -44,17 +43,13 @@ func NewHelper(config HelperConfig, logHelper log.IHelper) (*helper, error) {
 		return nil, errors.Wrap(err, "failed to newGoESClient")
 	}
 
-	inst := &helper{
+	h := &helper{
 		config,
 		logHelper,
 		rawClient,
 	}
 
-	return inst, nil
-}
-
-func (h *helper) Client() *goES.Client {
-	return h.rawClient
+	return h, nil
 }
 
 func (h *helper) SaveDoc(index string, docID string, docBody []byte) error {
@@ -89,11 +84,11 @@ func (h *helper) DeleteDoc(index string, docID string) error {
 	return nil
 }
 
-func (h *helper) SearchDocs(index string, searchBody []byte) (*SearchDocsResponse, error) {
+func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResponse, error) {
 	resp, err := h.rawClient.Search(
 		h.rawClient.Search.WithIndex(index),
 		h.rawClient.Search.WithTrackTotalHits(true),
-		h.rawClient.Search.WithBody(bytes.NewReader(searchBody)),
+		h.rawClient.Search.WithBody(bytes.NewReader(condBody)),
 	)
 	if err != nil {
 		return nil, err
@@ -106,6 +101,27 @@ func (h *helper) SearchDocs(index string, searchBody []byte) (*SearchDocsRespons
 
 	result := &SearchDocsResponse{}
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (h *helper) CatIndices() ([]CatIndicesItemResponse, error) {
+	resp, err := h.rawClient.Cat.Indices(
+		h.rawClient.Cat.Indices.WithFormat("json"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
+
+	result := []CatIndicesItemResponse{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}
 
