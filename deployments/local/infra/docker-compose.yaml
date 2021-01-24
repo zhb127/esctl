@@ -1,0 +1,38 @@
+version: "3.4"
+services:
+  es:
+    image: elasticsearch:7.1.1
+    container_name: esctl-infra-es
+    restart: "no"
+    environment:
+      - discovery.type=single-node
+      - http.port=9200
+      - http.cors.enabled=true
+      - http.cors.allow-origin=/.*/,
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - http.cors.allow-credentials=true
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    networks: 
+      - esctl-infra
+    ports:
+      - "9200:9200"
+    volumes:
+      - vol-es-data:/usr/share/elasticsearch/data
+  es-gui:
+    image: elastichq/elasticsearch-hq
+    container_name: esctl-infra-es-gui
+    restart: "no"
+    networks: 
+      - esctl-infra
+    ports:
+      - "5000:5000"
+    links:
+      - es
+
+volumes:
+  vol-es-data:
+
+networks: 
+  esctl-infra:
+    name: esctl-infra
