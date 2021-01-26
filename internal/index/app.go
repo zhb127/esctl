@@ -1,4 +1,4 @@
-package app
+package index
 
 import (
 	"esctl/pkg/config/dotenv"
@@ -16,7 +16,7 @@ type app struct {
 	esHelper  es.IHelper
 }
 
-func New() *app {
+func NewApp() IApp {
 	a := &app{}
 	a.initLogHelper()
 	a.initESHelper()
