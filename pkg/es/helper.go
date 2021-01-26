@@ -21,8 +21,8 @@ type HelperConfig struct {
 type IHelper interface {
 	SaveDoc(index string, docID string, docBody []byte) error
 	DeleteDoc(index string, docID string) error
-	SearchDocs(index string, condsBody []byte) (*SearchDocsResponse, error)
-	CatIndices() ([]CatIndicesItemResponse, error)
+	SearchDocs(index string, condsBody []byte) (*SearchDocsResp, error)
+	CatIndices() ([]CatIndicesItemResp, error)
 }
 
 type helper struct {
@@ -84,7 +84,7 @@ func (h *helper) DeleteDoc(index string, docID string) error {
 	return nil
 }
 
-func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResponse, error) {
+func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResp, error) {
 	resp, err := h.rawClient.Search(
 		h.rawClient.Search.WithIndex(index),
 		h.rawClient.Search.WithTrackTotalHits(true),
@@ -99,7 +99,7 @@ func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResponse,
 		return nil, errors.New(resp.String())
 	}
 
-	result := &SearchDocsResponse{}
+	result := &SearchDocsResp{}
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResponse,
 	return result, nil
 }
 
-func (h *helper) CatIndices() ([]CatIndicesItemResponse, error) {
+func (h *helper) CatIndices() ([]CatIndicesItemResp, error) {
 	resp, err := h.rawClient.Cat.Indices(
 		h.rawClient.Cat.Indices.WithFormat("json"),
 	)
@@ -120,7 +120,7 @@ func (h *helper) CatIndices() ([]CatIndicesItemResponse, error) {
 		return nil, errors.New(resp.String())
 	}
 
-	result := []CatIndicesItemResponse{}
+	result := []CatIndicesItemResp{}
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
 	}

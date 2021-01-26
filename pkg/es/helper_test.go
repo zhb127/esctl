@@ -133,7 +133,7 @@ func Test_helper_ListDocs(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *SearchDocsResponse
+		want    *SearchDocsResp
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -170,7 +170,7 @@ func Test_helper_CatIndices(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []CatIndicesItemResponse
+		want    []CatIndicesItemResp
 		wantErr bool
 	}{
 		{
