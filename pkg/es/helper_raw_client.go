@@ -78,9 +78,9 @@ func (l *goESClientLogger) ResponseBodyEnabled() bool { return true }
 
 func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, err error, start time.Time, dur time.Duration) error {
 	logFields := map[string]interface{}{
-		"duration": dur,
-		"request":  nil,
-		"response": nil,
+		"dur":  dur,
+		"req":  nil,
+		"resp": nil,
 	}
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 
 		// 只记录查询请求体
 		reqUrl := req.URL.String()
-		if strings.ContainsAny(reqUrl, "_search") {
+		if strings.ContainsAny(reqUrl, "/_search") {
 			if req.Body != nil && req.Body != http.NoBody {
 				reqBodyStr = tostr.FromIOReadCloser(req.Body)
 			}
@@ -100,7 +100,7 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 			reqBodyStr = "ignore logging request body due to it is not search request"
 		}
 
-		logFields["request"] = map[string]interface{}{
+		logFields["req"] = map[string]interface{}{
 			"method": req.Method,
 			"url":    req.URL.String(),
 			"body":   reqBodyStr,
@@ -117,7 +117,7 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 			}
 		}
 
-		logFields["response"] = map[string]interface{}{
+		logFields["resp"] = map[string]interface{}{
 			"status": resp.StatusCode,
 			"body":   respBodyStr,
 		}

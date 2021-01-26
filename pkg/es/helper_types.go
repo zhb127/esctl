@@ -61,3 +61,13 @@ type CatIndicesItemResp struct {
 	StoreSize    string `json:"store.size"`
 	PriStoreSize string `json:"pri.store.size"`
 }
+
+type CreateIndexResp struct {
+	Acknowledged       bool   `json:"acknowledged"`
+	ShardsAcknowledged bool   `json:"shards_acknowledged"`
+	Index              string `json:"index"`
+}
+
+type DeleteIndexResp struct {
+	Acknowledged bool `json:"acknowledged"`
+}

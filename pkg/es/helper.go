@@ -23,6 +23,7 @@ type IHelper interface {
 	DeleteDoc(index string, docID string) error
 	SearchDocs(index string, condsBody []byte) (*SearchDocsResp, error)
 	CatIndices() ([]CatIndicesItemResp, error)
+	CreateIndex(index string, indexBody []byte) (*CreateIndexResp, error)
 }
 
 type helper struct {
@@ -120,10 +121,51 @@ func (h *helper) CatIndices() ([]CatIndicesItemResp, error) {
 		return nil, errors.New(resp.String())
 	}
 
-	result := []CatIndicesItemResp{}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	res := []CatIndicesItemResp{}
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return res, nil
+}
+
+func (h *helper) CreateIndex(index string, indexBody []byte) (*CreateIndexResp, error) {
+	resp, err := h.rawClient.Indices.Create(
+		index,
+		h.rawClient.Indices.Create.WithBody(bytes.NewReader(indexBody)),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
+
+	res := &CreateIndexResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *helper) DeleteIndex(index string) (*DeleteIndexResp, error) {
+	resp, err := h.rawClient.Indices.Delete([]string{index})
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
+
+	res := &DeleteIndexResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
