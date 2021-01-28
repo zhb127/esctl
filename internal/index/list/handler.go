@@ -5,6 +5,7 @@ import (
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"os"
+	"text/template"
 
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/pflag"
@@ -32,9 +33,33 @@ func (h *handler) Handle(flags *pflag.FlagSet, args []string) error {
 		return err
 	}
 
+	format, err := flags.GetString("format")
+	if err != nil {
+		return err
+	}
+
+	if err := h.printf(format, resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (*handler) printf(format string, resp *es.CatIndicesResp) error {
+	// 按指定格式打印
+	if format != "" {
+		t := template.Must(template.New("specifiedFormat").Parse(format + "\n"))
+		for _, item := range resp.Items {
+			if err := t.Execute(os.Stdout, item); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// 按默认格式打印
 	columns := [][]string{}
-	for k := range resp.Items {
-		item := resp.Items[k]
+	for _, item := range resp.Items {
 		columns = append(columns, []string{
 			item.Health,
 			item.Status,
