@@ -189,7 +189,7 @@ func Test_helper_CatIndices(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []CatIndicesItemResp
+		want    *CatIndicesItemResp
 		wantErr bool
 	}{
 		{

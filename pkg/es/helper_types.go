@@ -49,6 +49,10 @@ type SearchDocsRespAggregationsResultBucket struct {
 	DocCount int    `json:"doc_count,omitempty"`
 }
 
+type CatIndicesResp struct {
+	Items []CatIndicesItemResp
+}
+
 type CatIndicesItemResp struct {
 	Health       string `json:"health"`
 	Status       string `json:"status"`
