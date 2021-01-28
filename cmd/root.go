@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 )
 
@@ -48,8 +49,16 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	configPath := os.Getenv("ESCTL_CONFIG")
+	if configPath == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			panic(err)
+		}
+		configPath = home + "/.esctl/default.env"
+	}
 
-	rootCmd.PersistentFlags().StringP("config", "c", "", "the .env file path, it will overwrite env vars")
+	rootCmd.PersistentFlags().StringP("config", "c", configPath, "the .env file path, it will overwrite env vars")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
