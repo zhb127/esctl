@@ -275,7 +275,7 @@ func Test_helper_CreateIndex(t *testing.T) {
 	}
 }
 
-func Test_helper_DeleteIndex(t *testing.T) {
+func Test_helper_DeleteIndices(t *testing.T) {
 	config := MockHelperConfig()
 	logHelper := tdLog.MockHelper()
 	rawClient := MockRawClient(config, logHelper)
@@ -319,7 +319,7 @@ func Test_helper_DeleteIndex(t *testing.T) {
 				logHelper: tt.fields.logHelper,
 				rawClient: tt.fields.rawClient,
 			}
-			got, err := h.DeleteIndex(tt.args.index)
+			got, err := h.DeleteIndices(tt.args.index)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("helper.DeleteIndex() error = %v, wantErr %v", err, tt.wantErr)
 				return

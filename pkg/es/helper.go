@@ -24,6 +24,7 @@ type IHelper interface {
 	SearchDocs(index string, condsBody []byte) (*SearchDocsResp, error)
 	CatIndices(indexWithWildcards ...string) (*CatIndicesResp, error)
 	CreateIndex(index string, indexBody []byte) (*CreateIndexResp, error)
+	DeleteIndices(index ...string) (*DeleteIndexResp, error)
 }
 
 type helper struct {
@@ -152,8 +153,8 @@ func (h *helper) CreateIndex(index string, indexBody []byte) (*CreateIndexResp, 
 	return res, nil
 }
 
-func (h *helper) DeleteIndex(index string) (*DeleteIndexResp, error) {
-	resp, err := h.rawClient.Indices.Delete([]string{index})
+func (h *helper) DeleteIndices(index ...string) (*DeleteIndexResp, error) {
+	resp, err := h.rawClient.Indices.Delete(index)
 	if err != nil {
 		return nil, err
 	}
