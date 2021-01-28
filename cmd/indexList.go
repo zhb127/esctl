@@ -1,5 +1,5 @@
 /*
-Copyright © 2020 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 NAME HERE <EMAIL ADDRESS>
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,26 +16,34 @@ limitations under the License.
 package cmd
 
 import (
+	"esctl/internal/index/app"
+	"esctl/internal/index/list"
+
 	"github.com/spf13/cobra"
 )
 
-// indexCmd represents the index command
-var indexCmd = &cobra.Command{
-	Use:   "index",
-	Short: "Manage ES indices",
-	Long:  `Manage ES indices`,
+// indexListCmd represents the indexList command
+var indexListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "Lists the specified indices",
+	Long:  `Lists the specified indices`,
+	Run: func(cmd *cobra.Command, args []string) {
+		app := app.New()
+		handler := list.NewHandler(app)
+		handler.Handle()
+	},
 }
 
 func init() {
-	rootCmd.AddCommand(indexCmd)
+	indexCmd.AddCommand(indexListCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// indexCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// indexListCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// indexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// indexListCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
