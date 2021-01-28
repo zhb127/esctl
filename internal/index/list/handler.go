@@ -61,10 +61,10 @@ func (*handler) printf(format string, resp *es.CatIndicesResp) error {
 	columns := [][]string{}
 	for _, item := range resp.Items {
 		columns = append(columns, []string{
+			item.ID,
+			item.Index,
 			item.Health,
 			item.Status,
-			item.Index,
-			item.Uuid,
 			item.Pri,
 			item.Rep,
 			item.DocsCount,
@@ -75,7 +75,7 @@ func (*handler) printf(format string, resp *es.CatIndicesResp) error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Health", "Status", "Index", "UUID", "Pri", "Rep", "DocsCount", "DocsDeleted", "StoreSize", "PriStoreSize"})
+	table.SetHeader([]string{"ID", "Index", "Health", "Status", "Pri", "Rep", "DocsCount", "DocsDeleted", "StoreSize", "PriStoreSize"})
 	table.SetAutoFormatHeaders(false)
 	table.SetAutoWrapText(false)
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
