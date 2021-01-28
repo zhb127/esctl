@@ -26,11 +26,10 @@ func NewHandler(a app.IApp) IHandler {
 }
 
 func (h *handler) Handle(flags *pflag.FlagSet, args []string) error {
-	resp, err := h.esHelper.DeleteIndices(args...)
-	if err != nil {
+	if _, err := h.esHelper.DeleteIndices(args...); err != nil {
 		return err
 	}
 
-	fmt.Printf("%v", resp)
+	fmt.Println("success")
 	return nil
 }
