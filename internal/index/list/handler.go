@@ -7,10 +7,11 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/pflag"
 )
 
 type IHandler interface {
-	Handle()
+	Handle(flags *pflag.FlagSet, args []string) error
 }
 
 type handler struct {
@@ -25,10 +26,10 @@ func NewHandler(a app.IApp) IHandler {
 	}
 }
 
-func (h *handler) Handle() {
-	resp, err := h.esHelper.CatIndices("*-v1")
+func (h *handler) Handle(flags *pflag.FlagSet, args []string) error {
+	resp, err := h.esHelper.CatIndices(args...)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	columns := [][]string{}
@@ -63,4 +64,6 @@ func (h *handler) Handle() {
 	table.SetNoWhiteSpace(true)
 	table.AppendBulk(columns)
 	table.Render()
+
+	return nil
 }

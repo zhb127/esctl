@@ -18,6 +18,8 @@ package cmd
 import (
 	"esctl/internal/index/app"
 	"esctl/internal/index/list"
+	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +32,10 @@ var indexListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app := app.New()
 		handler := list.NewHandler(app)
-		handler.Handle()
+		if err := handler.Handle(cmd.Flags(), args); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 	},
 }
 
