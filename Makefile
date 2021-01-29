@@ -11,3 +11,7 @@ local-infra-down:
 test: CONFIG ?= ""
 test:
 	./test/run.sh ${CONFIG}
+
+# 执行 CI 构建
+build-ci:
+	./build/ci/code-build.sh
