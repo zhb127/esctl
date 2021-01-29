@@ -2,8 +2,9 @@ language: go
 go:
   - "1.15"
 
-os:
-  - linux
-
-script:
-  - make build-ci
+deploy:
+  provider: releases
+  api_key: "${GITHUB_API_TOKEN}"
+  skip_cleanup: true
+  on:
+    tags: true
