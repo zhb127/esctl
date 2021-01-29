@@ -55,10 +55,10 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
-		configPath = home + "/.esctl/default.env"
+		configPath = home + "/.esctl/config"
 	}
 
-	rootCmd.PersistentFlags().StringP("config", "c", configPath, "the .env file path, it will overwrite env vars")
+	rootCmd.PersistentFlags().StringP("config", "c", configPath, "the config file path(.env format), it will overwrite env vars")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
