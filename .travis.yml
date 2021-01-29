@@ -1,0 +1,9 @@
+language: go
+go:
+  - "1.15"
+
+os:
+  - linux
+
+script:
+  - make build-ci
