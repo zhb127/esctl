@@ -1,9 +1,9 @@
 package es
 
 import (
+	"encoding/base64"
 	"esctl/pkg/log"
 	"esctl/pkg/util/converttype/tostr"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -23,10 +23,14 @@ func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, err
 		goESConfig.Logger = newRawClientLogger(logHelper)
 	}
 
-	if config.CertPath != "" {
-		certByteArr, err := ioutil.ReadFile(config.CertPath)
+	if config.CertVerify == true {
+		if config.CertData == "" {
+			return nil, errors.New("config.CertData is empty")
+		}
+
+		certByteArr, err := base64.StdEncoding.DecodeString(config.CertData)
 		if err != nil {
-			return nil, errors.Wrap(err, "config.CertPath is invalid")
+			return nil, errors.Wrap(err, "config.CertData is invalid")
 		}
 		goESConfig.CACert = certByteArr
 	}
