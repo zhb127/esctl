@@ -3,6 +3,7 @@ package cmd
 import "errors"
 
 type config struct {
+	Log                Log                  `mapstructure:"log"`
 	Clusters           []configClustersItem `mapstructure:"clusters"`
 	Users              []configUsersItem    `mapstructure:"users"`
 	Contexts           []configContextsItem `mapstructure:"contexts"`
@@ -12,6 +13,11 @@ type config struct {
 	CurrentUserItem    *configUsersItem
 	CurrentClusterItem *configClustersItem
 	CurrentContextItem *configContextsItem
+}
+
+type Log struct {
+	Level  string `mapstructure:"level" default:"debug"`
+	Format string `mapstructure:"format" default:"pretty"`
 }
 
 type configClustersItem struct {
