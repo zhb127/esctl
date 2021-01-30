@@ -7,8 +7,8 @@ import (
 )
 
 type HelperConfig struct {
-	LogLevel  string
-	LogFormat string
+	LogLevel  string `env:"LOG_LEVEL,default=debug"`
+	LogFormat string `env:"LOG_FORMAT,default=json"`
 }
 
 type IHelper interface {

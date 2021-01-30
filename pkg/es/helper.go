@@ -11,11 +11,11 @@ import (
 )
 
 type HelperConfig struct {
-	Addresses  string
-	Username   string
-	Password   string
-	CertData   string
-	CertVerify bool
+	Addresses  string `env:"ES_ADDRESSES,required"`
+	Username   string `env:"ES_USERNAME"`
+	Password   string `env:"ES_PASSWORD"`
+	CertData   string `env:"ES_CERT_DATA"`
+	CertVerify bool   `env:"ES_CERT_VERIFY,default=false"`
 }
 
 type IHelper interface {
