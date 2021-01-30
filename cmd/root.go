@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	defaults "github.com/mcuadros/go-defaults"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -84,6 +85,8 @@ func initConfig() {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 
+	defaults.SetDefaults(&cfg)
+
 	if err := viper.Unmarshal(&cfg); err != nil {
 		fmt.Println(errors.Wrap(err, "Unmarshal config file"))
 	}
@@ -91,4 +94,6 @@ func initConfig() {
 	if err := validateConfig(&cfg); err != nil {
 		fmt.Println(errors.Wrap(err, "Validate config"))
 	}
+
+	fmt.Printf("%v", cfg)
 }
