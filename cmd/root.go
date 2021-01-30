@@ -16,13 +16,18 @@ limitations under the License.
 package cmd
 
 import (
-	"esctl/pkg/config/dotenv"
 	"fmt"
 	"os"
 
-	"github.com/mitchellh/go-homedir"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/viper"
 )
+
+var cfg config
+var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -44,36 +49,46 @@ func Execute() {
 }
 
 func init() {
+	// 初始化完成后才执行 OnInitialize
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	configPath := os.Getenv("ESCTL_CONFIG")
-	if configPath == "" {
-		home, err := homedir.Dir()
-		if err != nil {
-			panic(err)
-		}
-		configPath = home + "/.esctl/config"
-	}
-
-	rootCmd.PersistentFlags().StringP("config", "c", configPath, "the config file path(.env format), it will overwrite env vars")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
+	rootCmd.PersistentFlags().StringP("context", "", "", "The name of the config context to use")
+	rootCmd.PersistentFlags().StringP("cluster", "", "", "The name of the config cluster to use")
+	rootCmd.PersistentFlags().StringP("user", "", "", "The name of the config user to use")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+// initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	flagConfigFile, err := rootCmd.PersistentFlags().GetString("config")
-	if err != nil {
-		panic(err)
+	if cfgFile == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		cfgFile = home + "/.esctl/config"
 	}
 
-	if flagConfigFile != "" {
-		if err := dotenv.Load(flagConfigFile); err != nil {
-			panic(err)
-		}
+	viper.SetConfigFile(cfgFile)
+	viper.SetConfigType("yaml")
+
+	// If a config file is found, read it in.
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		fmt.Println(errors.Wrap(err, "Unmarshal config file"))
+	}
+
+	if err := validateConfig(&cfg); err != nil {
+		fmt.Println(errors.Wrap(err, "Validate config"))
 	}
 }
