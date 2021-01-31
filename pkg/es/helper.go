@@ -19,12 +19,12 @@ type HelperConfig struct {
 }
 
 type IHelper interface {
-	SaveDoc(index string, docID string, docBody []byte) error
-	DeleteDoc(index string, docID string) error
-	SearchDocs(index string, condsBody []byte) (*SearchDocsResp, error)
-	CatIndices(indexWithWildcards ...string) (*CatIndicesResp, error)
-	CreateIndex(index string, indexBody []byte) (*CreateIndexResp, error)
-	DeleteIndices(index ...string) (*DeleteIndexResp, error)
+	SaveDoc(indexName string, docID string, docBody []byte) error
+	DeleteDoc(indexName string, docID string) error
+	SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error)
+	CatIndices(indexNameWithWildcards ...string) (*CatIndicesResp, error)
+	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
+	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
 }
 
 type helper struct {
@@ -54,9 +54,9 @@ func NewHelper(config HelperConfig, logHelper log.IHelper) (IHelper, error) {
 	return h, nil
 }
 
-func (h *helper) SaveDoc(index string, docID string, docBody []byte) error {
+func (h *helper) SaveDoc(indexName string, docID string, docBody []byte) error {
 	resp, err := h.rawClient.Index(
-		index,
+		indexName,
 		bytes.NewReader(docBody),
 		h.rawClient.Index.WithDocumentID(docID),
 	)
@@ -72,8 +72,8 @@ func (h *helper) SaveDoc(index string, docID string, docBody []byte) error {
 	return nil
 }
 
-func (h *helper) DeleteDoc(index string, docID string) error {
-	resp, err := h.rawClient.Delete(index, docID)
+func (h *helper) DeleteDoc(indexName string, docID string) error {
+	resp, err := h.rawClient.Delete(indexName, docID)
 	if err != nil {
 		return err
 	}
@@ -86,11 +86,11 @@ func (h *helper) DeleteDoc(index string, docID string) error {
 	return nil
 }
 
-func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResp, error) {
+func (h *helper) SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error) {
 	resp, err := h.rawClient.Search(
-		h.rawClient.Search.WithIndex(index),
+		h.rawClient.Search.WithIndex(indexName),
 		h.rawClient.Search.WithTrackTotalHits(true),
-		h.rawClient.Search.WithBody(bytes.NewReader(condBody)),
+		h.rawClient.Search.WithBody(bytes.NewReader(searchBody)),
 	)
 	if err != nil {
 		return nil, err
@@ -109,9 +109,9 @@ func (h *helper) SearchDocs(index string, condBody []byte) (*SearchDocsResp, err
 	return result, nil
 }
 
-func (h *helper) CatIndices(indexWithWildcards ...string) (*CatIndicesResp, error) {
+func (h *helper) CatIndices(indexNameWithWildcards ...string) (*CatIndicesResp, error) {
 	resp, err := h.rawClient.Cat.Indices(
-		h.rawClient.Cat.Indices.WithIndex(indexWithWildcards...),
+		h.rawClient.Cat.Indices.WithIndex(indexNameWithWildcards...),
 		h.rawClient.Cat.Indices.WithFormat("json"),
 	)
 	if err != nil {
@@ -131,9 +131,9 @@ func (h *helper) CatIndices(indexWithWildcards ...string) (*CatIndicesResp, erro
 	return res, nil
 }
 
-func (h *helper) CreateIndex(index string, indexBody []byte) (*CreateIndexResp, error) {
+func (h *helper) CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error) {
 	resp, err := h.rawClient.Indices.Create(
-		index,
+		indexName,
 		h.rawClient.Indices.Create.WithBody(bytes.NewReader(indexBody)),
 	)
 	if err != nil {
@@ -153,8 +153,8 @@ func (h *helper) CreateIndex(index string, indexBody []byte) (*CreateIndexResp, 
 	return res, nil
 }
 
-func (h *helper) DeleteIndices(index ...string) (*DeleteIndexResp, error) {
-	resp, err := h.rawClient.Indices.Delete(index)
+func (h *helper) DeleteIndices(indexNames ...string) (*DeleteIndexResp, error) {
+	resp, err := h.rawClient.Indices.Delete(indexNames)
 	if err != nil {
 		return nil, err
 	}
