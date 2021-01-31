@@ -27,8 +27,8 @@ func NewHandler(a app.IApp) IHandler {
 	}
 }
 
-func (h *handler) Handle(flags *pflag.FlagSet, args []string) error {
-	resp, err := h.esHelper.CatIndices(args...)
+func (h *handler) Handle(flags *pflag.FlagSet, indexNameWithWildcards []string) error {
+	resp, err := h.esHelper.CatIndices(indexNameWithWildcards...)
 	if err != nil {
 		return err
 	}
