@@ -27,6 +27,11 @@ func FromUint64(v uint64) string {
 	return res
 }
 
+func FromInt64(v int64) string {
+	res := strconv.FormatInt(v, 10)
+	return res
+}
+
 func FromIOReadCloser(v io.ReadCloser) string {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(v)
