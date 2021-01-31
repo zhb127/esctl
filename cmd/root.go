@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -67,6 +68,8 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	log.SetOutput(os.Stderr)
+
 	if cfgFile == "" {
 		home, err := homedir.Dir()
 		if err != nil {
