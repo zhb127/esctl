@@ -18,23 +18,21 @@ package cmd
 import (
 	"esctl/internal/index/app"
 	"esctl/internal/index/list"
-	"fmt"
-	"os"
+	"log"
 
 	"github.com/spf13/cobra"
 )
 
 // indexListCmd represents the indexList command
 var indexListCmd = &cobra.Command{
-	Use:   "list",
+	Use:   "list NAME_WITH_WILDCARDS_1 ... NAME_WITH_WILDCARDS_N",
 	Short: "Lists the specified indices",
 	Long:  `Lists the specified indices`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := app.New()
 		handler := list.NewHandler(app)
 		if err := handler.Handle(cmd.Flags(), args); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 	},
 }

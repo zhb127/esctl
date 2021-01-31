@@ -18,7 +18,7 @@ package cmd
 import (
 	"esctl/internal/index/app"
 	"esctl/internal/index/delete"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -26,15 +26,19 @@ import (
 
 // indexDeleteCmd represents the indexDelete command
 var indexDeleteCmd = &cobra.Command{
-	Use:   "delete",
+	Use:   "delete NAME_1 ... NAME_N",
 	Short: "Delete the specified indices",
 	Long:  `Delete the specified indices`,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
+
 		app := app.New()
 		handler := delete.NewHandler(app)
-		if err := handler.Handle(cmd.Flags(), args); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		if err := handler.Handle(args); err != nil {
+			log.Fatal(err)
 		}
 	},
 }
