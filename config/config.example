@@ -1,0 +1,20 @@
+log:
+  level: debug
+  format: pretty
+clusters:
+- name: localhost
+  cluster:
+    addresses: http://localhost:9200
+users:
+- name: localhost
+  user:
+    username:
+    password:
+    certVerify:
+    certContent:
+contexts:
+- name: localhost
+  context:
+    cluster: localhost
+    user: localhost
+current-context: localhost
