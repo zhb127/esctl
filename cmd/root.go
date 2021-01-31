@@ -56,10 +56,11 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
-	rootCmd.PersistentFlags().StringP("context", "", "", "The name of the config context to use")
-	rootCmd.PersistentFlags().StringP("cluster", "", "", "The name of the config cluster to use")
-	rootCmd.PersistentFlags().StringP("user", "", "", "The name of the config user to use")
+	persistenFlags := rootCmd.PersistentFlags()
+	persistenFlags.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
+	persistenFlags.StringP("context", "", "", "The name of the config context to use")
+	persistenFlags.StringP("cluster", "", "", "The name of the config cluster to use")
+	persistenFlags.StringP("user", "", "", "The name of the config user to use")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -89,10 +90,17 @@ func initConfig() {
 
 	if err := viper.Unmarshal(&cfg); err != nil {
 		fmt.Println(errors.Wrap(err, "Unmarshal config file"))
+		os.Exit(1)
+	}
+
+	if err := injectFlagsToConfig(&cfg); err != nil {
+		fmt.Println(errors.Wrap(err, "Inject flags to config"))
+		os.Exit(1)
 	}
 
 	if err := validateConfig(&cfg); err != nil {
 		fmt.Println(errors.Wrap(err, "Validate config"))
+		os.Exit(1)
 	}
 
 	injectConfigToEnvVars(&cfg)

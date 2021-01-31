@@ -55,6 +55,35 @@ type ContextsItemContext struct {
 	User    string `mapstructure:"user"`
 }
 
+func injectFlagsToConfig(cfg *config) error {
+	persistenFlags := rootCmd.PersistentFlags()
+	flagCluster, err := persistenFlags.GetString("cluster")
+	if err != nil {
+		return err
+	}
+	if flagCluster != "" {
+		cfg.CurrentClusterName = flagCluster
+	}
+
+	flagUser, err := persistenFlags.GetString("user")
+	if err != nil {
+		return err
+	}
+	if flagUser != "" {
+		cfg.CurrentUserName = flagUser
+	}
+
+	flagContext, err := persistenFlags.GetString("context")
+	if err != nil {
+		return err
+	}
+	if flagContext != "" {
+		cfg.CurrentContextName = flagContext
+	}
+
+	return nil
+}
+
 func validateConfig(cfg *config) error {
 	if cfg == nil {
 		return errors.New("config is nil")
@@ -76,8 +105,12 @@ func validateConfig(cfg *config) error {
 	for _, v := range cfg.Contexts {
 		if v.Name == cfg.CurrentContextName {
 			cfg.CurrentContextItem = &v
-			cfg.CurrentClusterName = v.Context.Cluster
-			cfg.CurrentUserName = v.Context.User
+			if cfg.CurrentClusterName == "" {
+				cfg.CurrentClusterName = v.Context.Cluster
+			}
+			if cfg.CurrentUserName == "" {
+				cfg.CurrentUserName = v.Context.User
+			}
 			break
 		}
 	}
@@ -91,12 +124,18 @@ func validateConfig(cfg *config) error {
 			break
 		}
 	}
+	if cfg.CurrentClusterItem == nil {
+		return errors.New("config.clusters not contains config.current-cluster")
+	}
 
 	for _, v := range cfg.Users {
 		if v.Name == cfg.CurrentUserName {
 			cfg.CurrentUserItem = &v
 			break
 		}
+	}
+	if cfg.CurrentUserItem == nil {
+		return errors.New("config.users not contains config.current-user")
 	}
 
 	return nil
