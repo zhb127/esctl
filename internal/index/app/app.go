@@ -1,6 +1,7 @@
 package app
 
 import (
+	"esctl/pkg/config/dotenv"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 )
@@ -10,27 +11,23 @@ type IApp interface {
 	ESHelper() es.IHelper
 }
 
-type AppConfig struct {
-	LogHelper log.HelperConfig
-	ESHelper  es.HelperConfig
-}
-
 type app struct {
-	config    AppConfig
 	logHelper log.IHelper
 	esHelper  es.IHelper
 }
 
-func New(config AppConfig) IApp {
-	a := &app{
-		config: config,
-	}
-	a.initLogHelper(config.LogHelper)
-	a.initESHelper(config.ESHelper)
+func New() IApp {
+	a := &app{}
+	a.initLogHelper()
+	a.initESHelper()
 	return a
 }
 
-func (a *app) initLogHelper(config log.HelperConfig) {
+func (a *app) initLogHelper() {
+	config := log.HelperConfig{}
+	if err := dotenv.Decode(&config); err != nil {
+		panic(err)
+	}
 	inst, err := log.NewHelper(config)
 	if err != nil {
 		panic(err)
@@ -38,7 +35,11 @@ func (a *app) initLogHelper(config log.HelperConfig) {
 	a.logHelper = inst
 }
 
-func (a *app) initESHelper(config es.HelperConfig) {
+func (a *app) initESHelper() {
+	config := es.HelperConfig{}
+	if err := dotenv.Decode(&config); err != nil {
+		panic(err)
+	}
 	inst, err := es.NewHelper(config, a.logHelper)
 	if err != nil {
 		panic(err)
