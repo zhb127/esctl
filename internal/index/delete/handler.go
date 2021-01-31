@@ -5,12 +5,10 @@ import (
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"fmt"
-
-	"github.com/spf13/pflag"
 )
 
 type IHandler interface {
-	Handle(flags *pflag.FlagSet, args []string) error
+	Handle(indexNames []string) error
 }
 
 type handler struct {
@@ -25,8 +23,8 @@ func NewHandler(a app.IApp) IHandler {
 	}
 }
 
-func (h *handler) Handle(flags *pflag.FlagSet, args []string) error {
-	if _, err := h.esHelper.DeleteIndices(args...); err != nil {
+func (h *handler) Handle(indexNames []string) error {
+	if _, err := h.esHelper.DeleteIndices(indexNames...); err != nil {
 		return err
 	}
 
