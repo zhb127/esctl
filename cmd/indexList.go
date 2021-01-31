@@ -25,13 +25,17 @@ import (
 
 // indexListCmd represents the indexList command
 var indexListCmd = &cobra.Command{
-	Use:   "list NAME_WITH_WILDCARDS_1 ... NAME_WITH_WILDCARDS_N",
+	Use:   "list (NAME_WITH_WILDCARDS_1 ... NAME_WITH_WILDCARDS_N)",
 	Short: "Lists the specified indices",
 	Long:  `Lists the specified indices`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := app.New()
 		handler := list.NewHandler(app)
-		if err := handler.Handle(cmd.Flags(), args); err != nil {
+		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := handler.Handle(handlerFlags, args); err != nil {
 			log.Fatal(err)
 		}
 	},

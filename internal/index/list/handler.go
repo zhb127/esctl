@@ -12,7 +12,8 @@ import (
 )
 
 type IHandler interface {
-	Handle(flags *pflag.FlagSet, args []string) error
+	ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error)
+	Handle(flags *HandlerFlags, args []string) error
 }
 
 type handler struct {
@@ -27,22 +28,33 @@ func NewHandler(a app.IApp) IHandler {
 	}
 }
 
-func (h *handler) Handle(flags *pflag.FlagSet, indexNameWithWildcards []string) error {
+type HandlerFlags struct {
+	Format string
+}
+
+func (h *handler) Handle(flags *HandlerFlags, indexNameWithWildcards []string) error {
 	resp, err := h.esHelper.CatIndices(indexNameWithWildcards...)
 	if err != nil {
 		return err
 	}
 
-	format, err := flags.GetString("format")
-	if err != nil {
-		return err
-	}
-
-	if err := h.printf(format, resp); err != nil {
+	if err := h.printf(flags.Format, resp); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
+	handlerFlags := &HandlerFlags{}
+
+	flagFormat, err := cmdFlags.GetString("format")
+	if err != nil {
+		return nil, err
+	}
+	handlerFlags.Format = flagFormat
+
+	return handlerFlags, nil
 }
 
 func (*handler) printf(format string, resp *es.CatIndicesResp) error {
