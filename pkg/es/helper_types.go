@@ -55,7 +55,7 @@ type CatIndicesResp struct {
 
 type CatIndicesItemResp struct {
 	ID           string `json:"uuid"`
-	Index        string `json:"index"`
+	Name         string `json:"index"`
 	Health       string `json:"health"`
 	Status       string `json:"status"`
 	Pri          string `json:"pri"`
