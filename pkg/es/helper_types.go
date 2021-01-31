@@ -75,3 +75,25 @@ type CreateIndexResp struct {
 type DeleteIndexResp struct {
 	Acknowledged bool `json:"acknowledged"`
 }
+
+type ReindexResp struct {
+	Took                 uint64             `json:"took"`
+	TimedOut             bool               `json:"timed_out"`
+	Total                uint64             `json:"total"`
+	Updated              uint64             `json:"updated"`
+	Created              uint64             `json:"created"`
+	Deleted              uint64             `json:"deleted"`
+	Batches              uint64             `json:"batches"`
+	VersionConflicts     uint64             `json:"version_conflicts"`
+	Noops                uint64             `json:"noops"`
+	Retries              ReindexRespRetries `json:"retries"`
+	ThrottledMillis      uint64             `json:"throttled_millis"`
+	RequestsPerSecond    float32            `json:"requests_per_second"`
+	ThrottledUntilMillis uint64             `json:"throttled_until_millis"`
+	Failures             []interface{}      `json:"failures"`
+}
+
+type ReindexRespRetries struct {
+	Bulk   uint64 `json:"bulk"`
+	Search uint64 `json:"search"`
+}

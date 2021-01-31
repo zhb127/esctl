@@ -3,9 +3,11 @@ package es
 import (
 	"esctl/pkg/config/dotenv"
 	"esctl/pkg/log"
+	"esctl/pkg/util/converttype/tostr"
 	tdLog "esctl/test/data/pkg/log"
 	"reflect"
 	"testing"
+	"time"
 
 	goES "github.com/elastic/go-elasticsearch/v7"
 	"github.com/stretchr/testify/assert"
@@ -38,7 +40,7 @@ func MockIndexNameExisting() string {
 		panic(err)
 	}
 
-	indexName := "mock-index-existing"
+	indexName := "mock-index-" + tostr.FromInt64(time.Now().UnixNano())
 	if _, err := inst.CreateIndex(indexName, []byte(`{"mappings":{"properties":{"id":{"type":"long"}}}}`)); err != nil {
 		panic(err)
 	}
@@ -326,6 +328,63 @@ func Test_helper_DeleteIndices(t *testing.T) {
 			}
 
 			assert.Equal(t, tt.want.Acknowledged, got.Acknowledged)
+		})
+	}
+}
+
+func Test_helper_Reindex(t *testing.T) {
+	config := MockHelperConfig()
+	logHelper := tdLog.MockHelper()
+	rawClient := MockRawClient(config, logHelper)
+
+	mockSrcIndexName := MockIndexNameExisting()
+	mockDestIndexName := MockIndexNameExisting()
+
+	type fields struct {
+		config    HelperConfig
+		logHelper log.IHelper
+		rawClient *goES.Client
+	}
+	type args struct {
+		srcIndexName  string
+		destIndexName string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    interface{}
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			args: args{
+				srcIndexName:  mockSrcIndexName,
+				destIndexName: mockDestIndexName,
+			},
+			want:    (*ReindexResp)(nil),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{
+				config:    tt.fields.config,
+				logHelper: tt.fields.logHelper,
+				rawClient: tt.fields.rawClient,
+			}
+			got, err := h.Reindex(tt.args.srcIndexName, tt.args.destIndexName)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("helper.Reindex() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("helper.Reindex() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

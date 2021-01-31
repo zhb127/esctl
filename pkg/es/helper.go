@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"esctl/pkg/log"
+	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -25,6 +27,7 @@ type IHelper interface {
 	CatIndices(indexNameWithWildcards ...string) (*CatIndicesResp, error)
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
+	Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error)
 }
 
 type helper struct {
@@ -165,6 +168,22 @@ func (h *helper) DeleteIndices(indexNames ...string) (*DeleteIndexResp, error) {
 	}
 
 	res := &DeleteIndexResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *helper) Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error) {
+	body := fmt.Sprintf(`{"source":{"index":"%s"},"dest":{"index":"%s"}}`, srcIndexName, destIndexName)
+
+	resp, err := h.rawClient.Reindex(strings.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	res := &ReindexResp{}
 	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
 		return nil, err
 	}
