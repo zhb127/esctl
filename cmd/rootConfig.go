@@ -1,6 +1,10 @@
 package cmd
 
-import "errors"
+import (
+	"errors"
+	"os"
+	"strconv"
+)
 
 type config struct {
 	Log                Log                  `mapstructure:"log"`
@@ -96,4 +100,15 @@ func validateConfig(cfg *config) error {
 	}
 
 	return nil
+}
+
+func injectConfigToEnvVars(cfg *config) {
+	os.Setenv("LOG_LEVEL", cfg.Log.Level)
+	os.Setenv("LOG_FORMAT", cfg.Log.Format)
+
+	os.Setenv("ES_ADDRESSES", cfg.CurrentClusterItem.Cluster.Addresses)
+	os.Setenv("ES_USERNAME", cfg.CurrentUserItem.User.Username)
+	os.Setenv("ES_PASSWORD", cfg.CurrentUserItem.User.Password)
+	os.Setenv("ES_CERT_DATA", cfg.CurrentUserItem.User.CertData)
+	os.Setenv("ES_CERT_VERIFY", strconv.FormatBool(cfg.CurrentUserItem.User.CertVerify))
 }

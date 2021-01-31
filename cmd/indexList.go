@@ -18,7 +18,6 @@ package cmd
 import (
 	"esctl/internal/index/app"
 	"esctl/internal/index/list"
-	"esctl/pkg/es"
 	"fmt"
 	"os"
 
@@ -31,16 +30,7 @@ var indexListCmd = &cobra.Command{
 	Short: "Lists the specified indices",
 	Long:  `Lists the specified indices`,
 	Run: func(cmd *cobra.Command, args []string) {
-		appConfig := app.AppConfig{
-			ESHelper: es.HelperConfig{
-				Addresses:  cfg.CurrentClusterItem.Cluster.Addresses,
-				Username:   cfg.CurrentUserItem.User.Username,
-				Password:   cfg.CurrentUserItem.User.Password,
-				CertData:   cfg.CurrentUserItem.User.CertData,
-				CertVerify: false,
-			},
-		}
-		app := app.New(appConfig)
+		app := app.New()
 		handler := list.NewHandler(app)
 		if err := handler.Handle(cmd.Flags(), args); err != nil {
 			fmt.Println(err)

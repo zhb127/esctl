@@ -95,5 +95,5 @@ func initConfig() {
 		fmt.Println(errors.Wrap(err, "Validate config"))
 	}
 
-	fmt.Printf("%v", cfg)
+	injectConfigToEnvVars(&cfg)
 }

@@ -30,8 +30,7 @@ var indexDeleteCmd = &cobra.Command{
 	Short: "Delete the specified indices",
 	Long:  `Delete the specified indices`,
 	Run: func(cmd *cobra.Command, args []string) {
-		appConfig := app.AppConfig{}
-		app := app.New(appConfig)
+		app := app.New()
 		handler := delete.NewHandler(app)
 		if err := handler.Handle(cmd.Flags(), args); err != nil {
 			fmt.Println(err)
