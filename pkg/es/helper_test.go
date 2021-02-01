@@ -191,7 +191,7 @@ func Test_helper_CatIndices(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    *CatIndicesItemResp
+		want    *CatIndicesResp
 		wantErr bool
 	}{
 		{
@@ -200,7 +200,7 @@ func Test_helper_CatIndices(t *testing.T) {
 				logHelper: logHelper,
 				rawClient: rawClient,
 			},
-			want:    nil,
+			want:    &CatIndicesResp{},
 			wantErr: false,
 		},
 	}
@@ -216,9 +216,7 @@ func Test_helper_CatIndices(t *testing.T) {
 				t.Errorf("helper.ListIndices() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("helper.ListIndices() = %v, want %v", got, tt.want)
-			}
+			assert.NotNil(t, got)
 		})
 	}
 }
