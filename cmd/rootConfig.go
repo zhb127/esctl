@@ -41,8 +41,8 @@ type configUsersItem struct {
 type configUsersItemUser struct {
 	Username   string `mapstructure:"username"`
 	Password   string `mapstructure:"password"`
-	CertVerify bool   `mapstructure:"cretVerify"`
-	CertData   string `mapstructure:"cretData"`
+	CertVerify bool   `mapstructure:"cret-verify"`
+	CertData   string `mapstructure:"cret-data"`
 }
 
 type configContextsItem struct {
