@@ -54,4 +54,5 @@ func init() {
 	// is called directly, e.g.:
 	// indexListCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	indexListCmd.Flags().String("format", "", "Pretty-print indices using a Go template")
+	indexListCmd.Flags().BoolP("all", "a", false, "List including hidden indices")
 }

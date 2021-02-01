@@ -5,6 +5,7 @@ import (
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/olekukonko/tablewriter"
@@ -30,12 +31,23 @@ func NewHandler(a app.IApp) IHandler {
 
 type HandlerFlags struct {
 	Format string
+	All    bool
 }
 
-func (h *handler) Handle(flags *HandlerFlags, indexNameWithWildcards []string) error {
-	resp, err := h.esHelper.CatIndices(indexNameWithWildcards...)
+func (h *handler) Handle(flags *HandlerFlags, indexNameWildcardExps []string) error {
+	resp, err := h.esHelper.CatIndices(indexNameWildcardExps...)
 	if err != nil {
 		return err
+	}
+
+	if flags.All == false {
+		respNew := &es.CatIndicesResp{}
+		for _, item := range resp.Items {
+			if !strings.HasPrefix(item.Name, ".") {
+				respNew.Items = append(respNew.Items, item)
+			}
+		}
+		resp = respNew
 	}
 
 	if err := h.printf(flags.Format, resp); err != nil {
@@ -53,6 +65,12 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 		return nil, err
 	}
 	handlerFlags.Format = flagFormat
+
+	flagAll, err := cmdFlags.GetBool("all")
+	if err != nil {
+		return nil, err
+	}
+	handlerFlags.All = flagAll
 
 	return handlerFlags, nil
 }
