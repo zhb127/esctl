@@ -48,6 +48,11 @@ func MockIndexNameExisting() string {
 	return indexName
 }
 
+func MockIndexAlias() string {
+	aliasName := "mock-alias-" + tostr.FromInt64(time.Now().UnixNano())
+	return aliasName
+}
+
 func TestNewHelper(t *testing.T) {
 	type args struct {
 		config    HelperConfig
@@ -351,7 +356,7 @@ func Test_helper_Reindex(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    interface{}
+		want    *ReindexResp
 		wantErr bool
 	}{
 		{
@@ -364,7 +369,7 @@ func Test_helper_Reindex(t *testing.T) {
 				srcIndexName:  mockSrcIndexName,
 				destIndexName: mockDestIndexName,
 			},
-			want:    (*ReindexResp)(nil),
+			want:    &ReindexResp{},
 			wantErr: false,
 		},
 	}
@@ -380,9 +385,148 @@ func Test_helper_Reindex(t *testing.T) {
 				t.Errorf("helper.Reindex() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("helper.Reindex() = %v, want %v", got, tt.want)
+
+			if got != nil {
+				gotTypeName := reflect.TypeOf(*got).Name()
+				wantTypeName := reflect.TypeOf(*tt.want).Name()
+				assert.Equal(t, gotTypeName, wantTypeName)
+			} else {
+				assert.Equal(t, got, tt.want)
 			}
+		})
+	}
+}
+
+func Test_helper_PutIndexAlias(t *testing.T) {
+	config := MockHelperConfig()
+	logHelper := tdLog.MockHelper()
+	rawClient := MockRawClient(config, logHelper)
+
+	mockIndexName := MockIndexNameExisting()
+	mockAliasName := MockIndexAlias()
+
+	type fields struct {
+		config    HelperConfig
+		logHelper log.IHelper
+		rawClient *goES.Client
+	}
+	type args struct {
+		indexName string
+		alias     string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *PutIndexAliasResp
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			args: args{
+				indexName: mockIndexName,
+				alias:     mockAliasName,
+			},
+			want: &PutIndexAliasResp{
+				Acknowledged: true,
+			},
+			wantErr: false,
+		},
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			args: args{
+				indexName: mockIndexName,
+				alias:     mockAliasName,
+			},
+			want: &PutIndexAliasResp{
+				Acknowledged: true,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{
+				config:    tt.fields.config,
+				logHelper: tt.fields.logHelper,
+				rawClient: tt.fields.rawClient,
+			}
+			got, err := h.PutIndexAlias(tt.args.indexName, tt.args.alias)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("helper.PutIndexAlias() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want.Acknowledged, got.Acknowledged)
+		})
+	}
+}
+
+func Test_helper_DeleteIndexAliases(t *testing.T) {
+	config := MockHelperConfig()
+	logHelper := tdLog.MockHelper()
+	rawClient := MockRawClient(config, logHelper)
+
+	mockIndexName := MockIndexNameExisting()
+	mockAliasNameNotExisting := MockIndexAlias()
+
+	type fields struct {
+		config    HelperConfig
+		logHelper log.IHelper
+		rawClient *goES.Client
+	}
+	type args struct {
+		indexName string
+		aliases   []string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    *DeleteIndexAliasesResp
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			args: args{
+				indexName: mockIndexName,
+				aliases:   []string{mockAliasNameNotExisting},
+			},
+			want: &DeleteIndexAliasesResp{
+				Acknowledged: true,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{
+				config:    tt.fields.config,
+				logHelper: tt.fields.logHelper,
+				rawClient: tt.fields.rawClient,
+			}
+			_, err := h.PutIndexAlias(tt.args.indexName, tt.args.aliases[0])
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := h.DeleteIndexAliases(tt.args.indexName, tt.args.aliases)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("helper.DeleteIndexAlias() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.Equal(t, tt.want.Acknowledged, got.Acknowledged)
 		})
 	}
 }

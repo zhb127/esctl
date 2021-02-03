@@ -97,3 +97,11 @@ type ReindexRespRetries struct {
 	Bulk   uint64 `json:"bulk"`
 	Search uint64 `json:"search"`
 }
+
+type PutIndexAliasResp struct {
+	Acknowledged bool `json:"acknowledged"`
+}
+
+type DeleteIndexAliasesResp struct {
+	Acknowledged bool `json:"acknowledged"`
+}

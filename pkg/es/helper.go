@@ -28,6 +28,8 @@ type IHelper interface {
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
 	Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error)
+	PutIndexAlias(indexName string, alias string) (*PutIndexAliasResp, error)
+	DeleteIndexAliases(indexName string, aliases []string) (*DeleteIndexAliasesResp, error)
 }
 
 type helper struct {
@@ -184,6 +186,34 @@ func (h *helper) Reindex(srcIndexName string, destIndexName string) (*ReindexRes
 	}
 
 	res := &ReindexResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *helper) PutIndexAlias(indexName string, alias string) (*PutIndexAliasResp, error) {
+	resp, err := h.rawClient.Indices.PutAlias([]string{indexName}, alias)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &PutIndexAliasResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *helper) DeleteIndexAliases(indexName string, aliases []string) (*DeleteIndexAliasesResp, error) {
+	resp, err := h.rawClient.Indices.DeleteAlias([]string{indexName}, aliases)
+	if err != nil {
+		return nil, err
+	}
+
+	res := &DeleteIndexAliasesResp{}
 	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
 		return nil, err
 	}
