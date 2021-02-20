@@ -56,7 +56,7 @@ func init() {
 	flags := indexCreateCmd.Flags()
 	flags.String("name", "", "The name of the index to be created")
 	flags.String("body", "", "The body (JSON) of the index to be created")
-	flags.String("file", "f", "The body (JSON file path) of the index to be created")
+	flags.StringP("file", "f", "", "The body (JSON file path) of the index to be created")
 
 	if err := cobra.MarkFlagRequired(flags, "name"); err != nil {
 		log.Fatal(err)
