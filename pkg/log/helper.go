@@ -137,7 +137,7 @@ func (h *helper) NewChild() *helper {
 
 	// 拷贝 map
 	jsonStr, _ := json.Marshal(h.withFields)
-	json.Unmarshal(jsonStr, &newInst.withFields)
+	_ = json.Unmarshal(jsonStr, &newInst.withFields)
 
 	return newInst
 }

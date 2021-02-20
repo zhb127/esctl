@@ -42,7 +42,7 @@ func newRawLogger(config HelperConfig) (*zerolog.Logger, error) {
 		logger = logger.Level(zerolog.FatalLevel)
 	case LOG_LEVEL_PANIC:
 		logger = logger.Level(zerolog.PanicLevel)
-	case LOG_LEVEL_DISABLED:
+	case LOG_LEVEL_NONE:
 		logger = logger.Level(zerolog.Disabled)
 	default:
 		return nil, errors.Errorf("config.LogLevel=%s is invalid", config.LogLevel)
