@@ -107,7 +107,7 @@ type ListAliasesResp struct {
 }
 
 type ListAliasesItemResp struct {
-	Alias         string `json:"uuid"`
+	Alias         string `json:"alias"`
 	Index         string `json:"index"`
 	Filter        string `json:"filter"`
 	RoutingIndex  string `json:"routing.index"`
