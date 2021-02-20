@@ -53,6 +53,12 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// indexCreateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	indexCreateCmd.Flags().String("name", "", "The name of the index to be created")
-	indexCreateCmd.Flags().String("body", "", "The body of the index to be created")
+	flags := indexCreateCmd.Flags()
+	flags.String("name", "", "The name of the index to be created")
+	flags.String("body", "", "The body (JSON) of the index to be created")
+	flags.String("file", "f", "The body (JSON file path) of the index to be created")
+
+	if err := cobra.MarkFlagRequired(flags, "name"); err != nil {
+		log.Fatal(err)
+	}
 }
