@@ -30,6 +30,7 @@ type IHelper interface {
 	Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error)
 	AliasIndex(indexName string, alias string) (*AliasOrUnaliasIndexResp, error)
 	UnaliasIndex(indexName string, aliases []string) (*AliasOrUnaliasIndexResp, error)
+	ListAliases() (*ListAliasesResp, error)
 }
 
 type helper struct {
