@@ -397,7 +397,7 @@ func Test_helper_Reindex(t *testing.T) {
 	}
 }
 
-func Test_helper_PutIndexAlias(t *testing.T) {
+func Test_helper_AliasIndex(t *testing.T) {
 	config := MockHelperConfig()
 	logHelper := tdLog.MockHelper()
 	rawClient := MockRawClient(config, logHelper)
@@ -418,7 +418,7 @@ func Test_helper_PutIndexAlias(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *PutIndexAliasResp
+		want    *AliasOrUnaliasIndexResp
 		wantErr bool
 	}{
 		{
@@ -431,7 +431,7 @@ func Test_helper_PutIndexAlias(t *testing.T) {
 				indexName: mockIndexName,
 				alias:     mockAliasName,
 			},
-			want: &PutIndexAliasResp{
+			want: &AliasOrUnaliasIndexResp{
 				Acknowledged: true,
 			},
 			wantErr: false,
@@ -446,7 +446,7 @@ func Test_helper_PutIndexAlias(t *testing.T) {
 				indexName: mockIndexName,
 				alias:     mockAliasName,
 			},
-			want: &PutIndexAliasResp{
+			want: &AliasOrUnaliasIndexResp{
 				Acknowledged: true,
 			},
 			wantErr: false,
@@ -459,9 +459,9 @@ func Test_helper_PutIndexAlias(t *testing.T) {
 				logHelper: tt.fields.logHelper,
 				rawClient: tt.fields.rawClient,
 			}
-			got, err := h.PutIndexAlias(tt.args.indexName, tt.args.alias)
+			got, err := h.AliasIndex(tt.args.indexName, tt.args.alias)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("helper.PutIndexAlias() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("helper.AliasIndex() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, tt.want.Acknowledged, got.Acknowledged)
@@ -469,7 +469,7 @@ func Test_helper_PutIndexAlias(t *testing.T) {
 	}
 }
 
-func Test_helper_DeleteIndexAliases(t *testing.T) {
+func Test_helper_UnaliasIndex(t *testing.T) {
 	config := MockHelperConfig()
 	logHelper := tdLog.MockHelper()
 	rawClient := MockRawClient(config, logHelper)
@@ -490,7 +490,7 @@ func Test_helper_DeleteIndexAliases(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *DeleteIndexAliasesResp
+		want    *AliasOrUnaliasIndexResp
 		wantErr bool
 	}{
 		{
@@ -503,7 +503,7 @@ func Test_helper_DeleteIndexAliases(t *testing.T) {
 				indexName: mockIndexName,
 				aliases:   []string{mockAliasNameNotExisting},
 			},
-			want: &DeleteIndexAliasesResp{
+			want: &AliasOrUnaliasIndexResp{
 				Acknowledged: true,
 			},
 			wantErr: false,
@@ -516,17 +516,61 @@ func Test_helper_DeleteIndexAliases(t *testing.T) {
 				logHelper: tt.fields.logHelper,
 				rawClient: tt.fields.rawClient,
 			}
-			_, err := h.PutIndexAlias(tt.args.indexName, tt.args.aliases[0])
+			_, err := h.AliasIndex(tt.args.indexName, tt.args.aliases[0])
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			got, err := h.DeleteIndexAliases(tt.args.indexName, tt.args.aliases)
+			got, err := h.UnaliasIndex(tt.args.indexName, tt.args.aliases)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("helper.DeleteIndexAlias() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("helper.UnaliasIndex() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, tt.want.Acknowledged, got.Acknowledged)
+		})
+	}
+}
+
+func Test_helper_ListAliases(t *testing.T) {
+	config := MockHelperConfig()
+	logHelper := tdLog.MockHelper()
+	rawClient := MockRawClient(config, logHelper)
+
+	type fields struct {
+		config    HelperConfig
+		logHelper log.IHelper
+		rawClient *goES.Client
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    *ListAliasesResp
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			want:    &ListAliasesResp{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{
+				config:    tt.fields.config,
+				logHelper: tt.fields.logHelper,
+				rawClient: tt.fields.rawClient,
+			}
+
+			got, err := h.ListAliases()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("helper.ListAliases() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			assert.NotNil(t, got)
 		})
 	}
 }

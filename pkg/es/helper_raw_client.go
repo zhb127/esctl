@@ -23,7 +23,7 @@ func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, err
 		goESConfig.Logger = newRawClientLogger(logHelper)
 	}
 
-	if config.CertVerify == true {
+	if config.CertVerify {
 		if config.CertData == "" {
 			return nil, errors.New("config.CertData is empty")
 		}
@@ -35,7 +35,7 @@ func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, err
 		goESConfig.CACert = certByteArr
 	}
 
-	if config.CertVerify == false {
+	if !config.CertVerify {
 		httpTransportTmp := http.DefaultTransport
 		httpTransport, _ := httpTransportTmp.(*http.Transport)
 		httpTransport = httpTransport.Clone()

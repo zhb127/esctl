@@ -98,10 +98,18 @@ type ReindexRespRetries struct {
 	Search uint64 `json:"search"`
 }
 
-type PutIndexAliasResp struct {
+type AliasOrUnaliasIndexResp struct {
 	Acknowledged bool `json:"acknowledged"`
 }
 
-type DeleteIndexAliasesResp struct {
-	Acknowledged bool `json:"acknowledged"`
+type ListAliasesResp struct {
+	Items []ListAliasesItemResp
+}
+
+type ListAliasesItemResp struct {
+	Alias         string `json:"uuid"`
+	Index         string `json:"index"`
+	Filter        string `json:"filter"`
+	RoutingIndex  string `json:"routing.index"`
+	RoutingSearch string `json:"routing.search"`
 }

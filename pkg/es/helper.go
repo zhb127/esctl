@@ -28,8 +28,8 @@ type IHelper interface {
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
 	Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error)
-	PutIndexAlias(indexName string, alias string) (*PutIndexAliasResp, error)
-	DeleteIndexAliases(indexName string, aliases []string) (*DeleteIndexAliasesResp, error)
+	AliasIndex(indexName string, alias string) (*AliasOrUnaliasIndexResp, error)
+	UnaliasIndex(indexName string, aliases []string) (*AliasOrUnaliasIndexResp, error)
 }
 
 type helper struct {
@@ -68,7 +68,6 @@ func (h *helper) SaveDoc(indexName string, docID string, docBody []byte) error {
 	if err != nil {
 		return err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return errors.New(resp.String())
@@ -82,7 +81,6 @@ func (h *helper) DeleteDoc(indexName string, docID string) error {
 	if err != nil {
 		return err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return errors.New(resp.String())
@@ -100,7 +98,6 @@ func (h *helper) SearchDocs(indexName string, searchBody []byte) (*SearchDocsRes
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return nil, errors.New(resp.String())
@@ -122,7 +119,6 @@ func (h *helper) CatIndices(indexNameWildcardExps ...string) (*CatIndicesResp, e
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return nil, errors.New(resp.String())
@@ -144,7 +140,6 @@ func (h *helper) CreateIndex(indexName string, indexBody []byte) (*CreateIndexRe
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return nil, errors.New(resp.String())
@@ -163,7 +158,6 @@ func (h *helper) DeleteIndices(indexNames ...string) (*DeleteIndexResp, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
 	if resp.IsError() {
 		return nil, errors.New(resp.String())
@@ -179,10 +173,13 @@ func (h *helper) DeleteIndices(indexNames ...string) (*DeleteIndexResp, error) {
 
 func (h *helper) Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error) {
 	body := fmt.Sprintf(`{"source":{"index":"%s"},"dest":{"index":"%s"}}`, srcIndexName, destIndexName)
-
 	resp, err := h.rawClient.Reindex(strings.NewReader(body))
 	if err != nil {
 		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
 	}
 
 	res := &ReindexResp{}
@@ -193,13 +190,17 @@ func (h *helper) Reindex(srcIndexName string, destIndexName string) (*ReindexRes
 	return res, nil
 }
 
-func (h *helper) PutIndexAlias(indexName string, alias string) (*PutIndexAliasResp, error) {
+func (h *helper) AliasIndex(indexName string, alias string) (*AliasOrUnaliasIndexResp, error) {
 	resp, err := h.rawClient.Indices.PutAlias([]string{indexName}, alias)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
 
-	res := &PutIndexAliasResp{}
+	res := &AliasOrUnaliasIndexResp{}
 	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
 		return nil, err
 	}
@@ -207,14 +208,38 @@ func (h *helper) PutIndexAlias(indexName string, alias string) (*PutIndexAliasRe
 	return res, nil
 }
 
-func (h *helper) DeleteIndexAliases(indexName string, aliases []string) (*DeleteIndexAliasesResp, error) {
+func (h *helper) UnaliasIndex(indexName string, aliases []string) (*AliasOrUnaliasIndexResp, error) {
 	resp, err := h.rawClient.Indices.DeleteAlias([]string{indexName}, aliases)
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
 
-	res := &DeleteIndexAliasesResp{}
+	res := &AliasOrUnaliasIndexResp{}
 	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (h *helper) ListAliases() (*ListAliasesResp, error) {
+	resp, err := h.rawClient.Cat.Aliases(
+		h.rawClient.Cat.Aliases.WithFormat("json"),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
+
+	res := &ListAliasesResp{}
+	if err := json.NewDecoder(resp.Body).Decode(&res.Items); err != nil {
 		return nil, err
 	}
 
