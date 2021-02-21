@@ -49,11 +49,11 @@ type SearchDocsRespAggregationsResultBucket struct {
 	DocCount int    `json:"doc_count,omitempty"`
 }
 
-type CatIndicesResp struct {
-	Items []CatIndicesItemResp
+type ListIndicesResp struct {
+	Items []ListIndicesItemResp
 }
 
-type CatIndicesItemResp struct {
+type ListIndicesItemResp struct {
 	ID           string `json:"uuid"`
 	Name         string `json:"index"`
 	Health       string `json:"health"`

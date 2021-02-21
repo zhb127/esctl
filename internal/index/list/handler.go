@@ -35,13 +35,13 @@ type HandlerFlags struct {
 }
 
 func (h *handler) Handle(flags *HandlerFlags, indexNameWildcardExps []string) error {
-	resp, err := h.esHelper.CatIndices(indexNameWildcardExps...)
+	resp, err := h.esHelper.ListIndices(indexNameWildcardExps...)
 	if err != nil {
 		return err
 	}
 
 	if flags.All == false {
-		respNew := &es.CatIndicesResp{}
+		respNew := &es.ListIndicesResp{}
 		for _, item := range resp.Items {
 			if !strings.HasPrefix(item.Name, ".") {
 				respNew.Items = append(respNew.Items, item)
@@ -75,7 +75,7 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 	return handlerFlags, nil
 }
 
-func (*handler) printf(format string, resp *es.CatIndicesResp) error {
+func (*handler) printf(format string, resp *es.ListIndicesResp) error {
 	// 按指定格式打印
 	if format != "" {
 		t := template.Must(template.New("specifiedFormat").Parse(format + "\n"))

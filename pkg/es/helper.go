@@ -24,7 +24,7 @@ type IHelper interface {
 	SaveDoc(indexName string, docID string, docBody []byte) error
 	DeleteDoc(indexName string, docID string) error
 	SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error)
-	CatIndices(indexNameWildcardExps ...string) (*CatIndicesResp, error)
+	ListIndices(indexNameWildcardExps ...string) (*ListIndicesResp, error)
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
 	Reindex(srcIndexName string, destIndexName string) (*ReindexResp, error)
@@ -112,7 +112,7 @@ func (h *helper) SearchDocs(indexName string, searchBody []byte) (*SearchDocsRes
 	return result, nil
 }
 
-func (h *helper) CatIndices(indexNameWildcardExps ...string) (*CatIndicesResp, error) {
+func (h *helper) ListIndices(indexNameWildcardExps ...string) (*ListIndicesResp, error) {
 	resp, err := h.rawClient.Cat.Indices(
 		h.rawClient.Cat.Indices.WithIndex(indexNameWildcardExps...),
 		h.rawClient.Cat.Indices.WithFormat("json"),
@@ -125,7 +125,7 @@ func (h *helper) CatIndices(indexNameWildcardExps ...string) (*CatIndicesResp, e
 		return nil, errors.New(resp.String())
 	}
 
-	res := &CatIndicesResp{}
+	res := &ListIndicesResp{}
 	if err := json.NewDecoder(resp.Body).Decode(&res.Items); err != nil {
 		return nil, err
 	}
