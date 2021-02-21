@@ -31,5 +31,9 @@ var indexCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(indexCmd)
 
+	indexCmd.AddCommand(index.ListCmd)
+	indexCmd.AddCommand(index.CreateCmd)
+	indexCmd.AddCommand(index.DeleteCmd)
+	indexCmd.AddCommand(index.ReindexCmd)
 	indexCmd.AddCommand(index.AliasCmd)
 }

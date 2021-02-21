@@ -55,11 +55,11 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
-	persistenFlags := rootCmd.PersistentFlags()
-	persistenFlags.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
-	persistenFlags.StringP("context", "", "", "The name of the config context to use")
-	persistenFlags.StringP("cluster", "", "", "The name of the config cluster to use")
-	persistenFlags.StringP("user", "", "", "The name of the config user to use")
+	pFlags := rootCmd.PersistentFlags()
+	pFlags.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
+	pFlags.StringP("context", "", "", "The name of the config context to use")
+	pFlags.StringP("cluster", "", "", "The name of the config cluster to use")
+	pFlags.StringP("user", "", "", "The name of the config user to use")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
