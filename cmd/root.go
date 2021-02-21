@@ -60,6 +60,7 @@ func init() {
 	pFlags.StringP("context", "", "", "The name of the config context to use")
 	pFlags.StringP("cluster", "", "", "The name of the config cluster to use")
 	pFlags.StringP("user", "", "", "The name of the config user to use")
+	pFlags.BoolP("verbose", "v", false, "Verbose output")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
