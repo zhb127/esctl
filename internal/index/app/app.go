@@ -28,7 +28,7 @@ func New() IApp {
 }
 
 func (a *app) initLogHelper() {
-	inst, err := log.NewHelper(a.config.logHelper)
+	inst, err := log.NewHelper(a.config.LogHelper)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +36,7 @@ func (a *app) initLogHelper() {
 }
 
 func (a *app) initESHelper() {
-	inst, err := es.NewHelper(a.config.esHelper, a.logHelper)
+	inst, err := es.NewHelper(a.config.ESHelper, a.logHelper)
 	if err != nil {
 		panic(err)
 	}

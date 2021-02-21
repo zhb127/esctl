@@ -7,16 +7,16 @@ import (
 )
 
 type appConfig struct {
-	logHelper log.HelperConfig
-	esHelper  es.HelperConfig
+	LogHelper log.HelperConfig
+	ESHelper  es.HelperConfig
 }
 
 func newAppConfig() *appConfig {
-	c := &appConfig{}
+	res := &appConfig{}
 
-	if err := dotenv.Decode(c); err != nil {
+	if err := dotenv.Decode(res); err != nil {
 		panic(err)
 	}
 
-	return c
+	return res
 }
