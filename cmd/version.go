@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"esctl/internal/version"
+	"esctl/internal/version/app"
+	"log"
+
 	"github.com/spf13/cobra"
 )
 
@@ -10,7 +14,11 @@ var versionCmd = &cobra.Command{
 	Long:  `Show the version information`,
 
 	Run: func(cmd *cobra.Command, args []string) {
-
+		app := app.New()
+		handler := version.NewHandler(app)
+		if err := handler.Run(); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 
