@@ -57,7 +57,29 @@ func NewHelper(config HelperConfig, logHelper log.IHelper) (IHelper, error) {
 		rawClient,
 	}
 
+	if _, err := h.Info(); err != nil {
+		return nil, err
+	}
+
 	return h, nil
+}
+
+func (h *helper) Info() (*InfoResp, error) {
+	resp, err := h.rawClient.Info()
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return nil, errors.New(resp.String())
+	}
+
+	res := &InfoResp{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (h *helper) SaveDoc(indexName string, docID string, docBody []byte) error {

@@ -80,6 +80,50 @@ func TestNewHelper(t *testing.T) {
 	}
 }
 
+func Test_helper_Info(t *testing.T) {
+	config := MockHelperConfig()
+	logHelper := tdLog.MockHelper()
+	rawClient := MockRawClient(config, logHelper)
+
+	type fields struct {
+		config    HelperConfig
+		logHelper log.IHelper
+		rawClient *goES.Client
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    *InfoResp
+		wantErr bool
+	}{
+		{
+			fields: fields{
+				config:    config,
+				logHelper: logHelper,
+				rawClient: rawClient,
+			},
+			want:    &InfoResp{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := &helper{
+				config:    tt.fields.config,
+				logHelper: tt.fields.logHelper,
+				rawClient: tt.fields.rawClient,
+			}
+			got, err := h.Info()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("helper.Info() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			assert.NotNil(t, got)
+		})
+	}
+}
+
 func Test_helper_SaveDoc(t *testing.T) {
 	type fields struct {
 		config    HelperConfig
@@ -183,7 +227,7 @@ func Test_helper_SearchDocs(t *testing.T) {
 	}
 }
 
-func Test_helper_CatIndices(t *testing.T) {
+func Test_helper_ListIndices(t *testing.T) {
 	config := MockHelperConfig()
 	logHelper := tdLog.MockHelper()
 	rawClient := MockRawClient(config, logHelper)

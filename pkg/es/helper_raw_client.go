@@ -48,18 +48,6 @@ func newRawClient(config HelperConfig, logHelper log.IHelper) (*goES.Client, err
 		return nil, errors.Wrap(err, "failed to goES.NewClient")
 	}
 
-	// 检查是否可访问
-	resp, err := goESClientInst.Info()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get ES Info")
-	}
-
-	defer resp.Body.Close()
-	if resp.IsError() {
-		tmpErr := errors.New(resp.String())
-		return nil, errors.Wrap(tmpErr, "failed to get ES Info")
-	}
-
 	return goESClientInst, nil
 }
 
