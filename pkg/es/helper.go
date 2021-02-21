@@ -21,6 +21,7 @@ type HelperConfig struct {
 }
 
 type IHelper interface {
+	Info() (*InfoResp, error)
 	SaveDoc(indexName string, docID string, docBody []byte) error
 	DeleteDoc(indexName string, docID string) error
 	SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error)
