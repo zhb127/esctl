@@ -21,5 +21,5 @@ func init() {
 	indexCmd.AddCommand(index.ReindexCmd)
 	indexCmd.AddCommand(index.AliasCmd)
 
-	indexCmd.AddCommand(index.MigrateCmd)
+	indexCmd.AddCommand(index.MoveCmd)
 }
