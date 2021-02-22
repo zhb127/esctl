@@ -29,6 +29,7 @@ func init() {
 	flags := MigrateCmd.Flags()
 	flags.StringP("src", "s", "", "The src index name")
 	flags.StringP("dest", "d", "", "The dest index name")
+	flags.BoolP("purge", "p", false, "Delete src index after migrate success")
 
 	if err := cobra.MarkFlagRequired(flags, "src"); err != nil {
 		log.Fatal(err)

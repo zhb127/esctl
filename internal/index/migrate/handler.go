@@ -15,8 +15,9 @@ type IHandler interface {
 }
 
 type HandlerFlags struct {
-	Src  string
-	Dest string
+	Src   string
+	Dest  string
+	Purge bool
 }
 
 type handler struct {
@@ -32,6 +33,15 @@ func NewHandler(a app.IApp) IHandler {
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
+	// find src index, dest index
+	listIndicesResp, err := h.esHelper.ListIndices(flags.Src, flags.Dest)
+	if err != nil {
+		return errors.Wrap(err, "find srcIndex and destIndex")
+	}
+	if len(listIndicesResp.Items) < 2 {
+		return errors.Wrap(err, "srcIndex or destIndex not found")
+	}
+
 	// get src alias
 	listAliasesResp, err := h.esHelper.ListAliases()
 	if err != nil {
@@ -81,6 +91,17 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		})
 	}
 
+	// delete src index
+	if flags.Purge {
+		deleteIndexResp, err := h.esHelper.DeleteIndices(flags.Src)
+		if err != nil {
+			return errors.Wrap(err, "delete srcIndex")
+		}
+		h.logHelper.Info("delete srcIndex", map[string]interface{}{
+			"result": deleteIndexResp,
+		})
+	}
+
 	return nil
 }
 
@@ -98,6 +119,12 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 		return nil, err
 	}
 	result.Dest = flagDest
+
+	flagPurge, err := cmdFlags.GetBool("purge")
+	if err != nil {
+		return nil, err
+	}
+	result.Purge = flagPurge
 
 	return result, nil
 }
