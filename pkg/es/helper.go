@@ -24,7 +24,7 @@ type IHelper interface {
 	Info() (*InfoResp, error)
 	SaveDoc(indexName string, docID string, docBody []byte) error
 	DeleteDoc(indexName string, docID string) error
-	SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error)
+	ListDocs(indexName string, searchBody []byte) (*ListDocsResp, error)
 	ListIndices(indexNameWildcardExps ...string) (*ListIndicesResp, error)
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
@@ -113,7 +113,7 @@ func (h *helper) DeleteDoc(indexName string, docID string) error {
 	return nil
 }
 
-func (h *helper) SearchDocs(indexName string, searchBody []byte) (*SearchDocsResp, error) {
+func (h *helper) ListDocs(indexName string, searchBody []byte) (*ListDocsResp, error) {
 	resp, err := h.rawClient.Search(
 		h.rawClient.Search.WithIndex(indexName),
 		h.rawClient.Search.WithTrackTotalHits(true),
@@ -127,7 +127,7 @@ func (h *helper) SearchDocs(indexName string, searchBody []byte) (*SearchDocsRes
 		return nil, errors.New(resp.String())
 	}
 
-	result := &SearchDocsResp{}
+	result := &ListDocsResp{}
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
 		return nil, err
 	}

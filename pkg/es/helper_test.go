@@ -189,7 +189,7 @@ func Test_helper_DeleteDoc(t *testing.T) {
 	}
 }
 
-func Test_helper_SearchDocs(t *testing.T) {
+func Test_helper_ListDocs(t *testing.T) {
 	type fields struct {
 		config    HelperConfig
 		logHelper log.IHelper
@@ -203,7 +203,7 @@ func Test_helper_SearchDocs(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *SearchDocsResp
+		want    *ListDocsResp
 		wantErr bool
 	}{
 		// TODO: Add test cases.
@@ -215,13 +215,13 @@ func Test_helper_SearchDocs(t *testing.T) {
 				logHelper: tt.fields.logHelper,
 				rawClient: tt.fields.rawClient,
 			}
-			got, err := h.SearchDocs(tt.args.index, tt.args.condBody)
+			got, err := h.ListDocs(tt.args.index, tt.args.condBody)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("helper.SearchDocs() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("helper.ListDocs() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("helper.SearchDocs() = %v, want %v", got, tt.want)
+				t.Errorf("helper.ListDocs() = %v, want %v", got, tt.want)
 			}
 		})
 	}

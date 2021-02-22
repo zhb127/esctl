@@ -21,33 +21,33 @@ type InfoRespVersion struct {
 	MinimumIndexCompatibilityVersion string `json:"minimum_index_compatibility_version"`
 }
 
-type SearchDocsResp struct {
-	Took         uint64                      `json:"took,omitempty"`
-	TimedOut     bool                        `json:"timed_out,omitempty"`
-	Shards       *SearchDocsRespShards       `json:"_shards,omitempty"`
-	Hits         *SearchDocsRespHitsHits     `json:"hits,omitempty"`
-	Aggregations *SearchDocsRespAggregations `json:"aggregations,omitempty"`
+type ListDocsResp struct {
+	Took         uint64                    `json:"took,omitempty"`
+	TimedOut     bool                      `json:"timed_out,omitempty"`
+	Shards       *ListDocsRespShards       `json:"_shards,omitempty"`
+	Hits         *ListDocsRespHitsHits     `json:"hits,omitempty"`
+	Aggregations *ListDocsRespAggregations `json:"aggregations,omitempty"`
 }
 
-type SearchDocsRespShards struct {
+type ListDocsRespShards struct {
 	Total      int `json:"total,omitempty"`
 	Successful int `json:"successful,omitempty"`
 	Skipped    int `json:"skipped,omitempty"`
 	Failed     int `json:"failed,omitempty"`
 }
 
-type SearchDocsRespHitsHits struct {
-	Total    SearchDocsRespHitsTotal      `json:"total,omitempty"`
-	MaxScore float32                      `json:"max_score,omitempty"`
-	Hits     []SearchDocsRespHitsHitsItem `json:"hits,omitempty"`
+type ListDocsRespHitsHits struct {
+	Total    ListDocsRespHitsTotal      `json:"total,omitempty"`
+	MaxScore float32                    `json:"max_score,omitempty"`
+	Hits     []ListDocsRespHitsHitsItem `json:"hits,omitempty"`
 }
 
-type SearchDocsRespHitsTotal struct {
+type ListDocsRespHitsTotal struct {
 	Value    uint64 `json:"value,omitempty"`
 	Relation string `json:"relation,omitempty"`
 }
 
-type SearchDocsRespHitsHitsItem struct {
+type ListDocsRespHitsHitsItem struct {
 	Index  string          `json:"_index,omitempty"`
 	Type   string          `json:"_type,omitempty"`
 	ID     string          `json:"_id,omitempty"`
@@ -55,15 +55,15 @@ type SearchDocsRespHitsHitsItem struct {
 	Source json.RawMessage `json:"_source,omitempty"`
 }
 
-type SearchDocsRespAggregations struct {
-	Result *SearchDocsRespAggregationsResult `json:"result,omitempty"`
+type ListDocsRespAggregations struct {
+	Result *ListDocsRespAggregationsResult `json:"result,omitempty"`
 }
 
-type SearchDocsRespAggregationsResult struct {
-	Buckets []SearchDocsRespAggregationsResultBucket `json:"buckets,omitempty"`
+type ListDocsRespAggregationsResult struct {
+	Buckets []ListDocsRespAggregationsResultBucket `json:"buckets,omitempty"`
 }
 
-type SearchDocsRespAggregationsResultBucket struct {
+type ListDocsRespAggregationsResultBucket struct {
 	Key      string `json:"key,omitempty"`
 	DocCount int    `json:"doc_count,omitempty"`
 }
