@@ -45,28 +45,39 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		}
 	}
 
-	h.logHelper.Debug("find srcIndex aliases", map[string]interface{}{
+	h.logHelper.Info("find srcIndex aliases", map[string]interface{}{
 		"aliases": srcAliases,
 	})
 
 	// reindex
 	reindexResp, err := h.esHelper.Reindex(flags.Src, flags.Dest)
 	if err != nil {
-		return errors.Wrapf(err, "reindex srcIndex to destIndex")
+		return errors.Wrap(err, "reindex srcIndex to destIndex")
 	}
 
-	h.logHelper.Debug("reindex srcIndex to DestIndex", map[string]interface{}{
+	h.logHelper.Info("reindex srcIndex to DestIndex", map[string]interface{}{
 		"result": reindexResp,
 	})
 
-	// copy alias
-	for _, v := range srcAliases {
-		aliasIndexResp, err := h.esHelper.AliasIndex(flags.Src, v)
-		if err != nil {
-			return errors.Wrapf(err, "copy alias=%s from srcIndex=%s to destIndex=%s", v, flags.Src, flags.Dest)
+	if len(srcAliases) > 0 {
+		// copy src aliases to dest
+		for _, v := range srcAliases {
+			aliasIndexResp, err := h.esHelper.AliasIndex(flags.Dest, v)
+			if err != nil {
+				return errors.Wrap(err, "copy alias from srcIndex to destIndex")
+			}
+			h.logHelper.Info("copy alias from srcIndex to destIndex", map[string]interface{}{
+				"result": aliasIndexResp,
+			})
 		}
-		h.logHelper.Debug("copy alias=%s from srcIndex=%s to destIndex=%s", map[string]interface{}{
-			"result": aliasIndexResp,
+
+		// delete src aliases
+		unaliasIndexResp, err := h.esHelper.UnaliasIndex(flags.Src, srcAliases)
+		if err != nil {
+			return errors.Wrap(err, "delete aliases from srcIndex")
+		}
+		h.logHelper.Info("delete aliases from srcIndex", map[string]interface{}{
+			"result": unaliasIndexResp,
 		})
 	}
 
