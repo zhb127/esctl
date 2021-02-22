@@ -119,9 +119,9 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 	case err != nil:
 		l.logHelper.Error("an error occurred", logFields)
 	case resp != nil && resp.StatusCode < http.StatusBadRequest:
-		l.logHelper.Info(resp.Status, logFields)
+		l.logHelper.Debug(resp.Status, logFields)
 	case resp != nil && resp.StatusCode >= http.StatusBadRequest && resp.StatusCode < http.StatusInternalServerError:
-		l.logHelper.Warn(resp.Status, logFields)
+		l.logHelper.Debug(resp.Status, logFields)
 	case resp != nil && resp.StatusCode >= http.StatusInternalServerError:
 		l.logHelper.Error(resp.Status, logFields)
 	default:
