@@ -5,7 +5,7 @@ type Migration struct {
 }
 
 type MigrationCMD struct {
-	CMD    string ``
-	Args   []string
-	Params map[string]interface{}
+	CMD   string ``
+	Args  []string
+	Flags map[string]interface{}
 }

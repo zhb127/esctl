@@ -1,12 +1,11 @@
 cmds:
-- cmd: index-create
+- cmd: "index create"
   args:
   flags:
     name: demo-v2
-    body: '''
-{"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}
-'''
-- cmd: index-migrate
+    body: |-
+      {"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}
+- cmd: "index move"
   flags:
     src: demo-v1
     dest: demo-v2

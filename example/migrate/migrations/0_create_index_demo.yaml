@@ -1,7 +1,6 @@
-stages:
-- action: index-create
-  params:
-    indexName: demo-v1
-    indexBody: '''
-{"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"}}}}
-'''
+cmds:
+- cmd: "index create"
+  flags:
+    name: demo-v1
+    body: |-
+      {"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"}}}}

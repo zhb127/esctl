@@ -2,9 +2,9 @@ package up
 
 import (
 	"esctl/internal/app"
+	"esctl/internal/migrate"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
-	"fmt"
 	"os"
 
 	"github.com/spf13/pflag"
@@ -16,14 +16,18 @@ type IHandler interface {
 }
 
 type handler struct {
-	logHelper log.IHelper
-	esHelper  es.IHelper
+	app            app.IApp
+	logHelper      log.IHelper
+	esHelper       es.IHelper
+	migrateService migrate.IService
 }
 
 func NewHandler(a app.IApp) IHandler {
 	return &handler{
-		logHelper: a.LogHelper(),
-		esHelper:  a.ESHelper(),
+		app:            a,
+		logHelper:      a.LogHelper(),
+		esHelper:       a.ESHelper(),
+		migrateService: migrate.NewService(a),
 	}
 }
 
@@ -44,7 +48,16 @@ func (h *handler) Run(flags *HandlerFlags) error {
 	}
 
 	for _, file := range files {
-		fmt.Println(file.Name())
+		migrationFile := flags.Dir + "/" + file.Name()
+
+		migration, err := h.migrateService.ParseMigrationFile(migrationFile)
+		if err != nil {
+			return err
+		}
+
+		if err := h.migrateService.ExecMigration(migration); err != nil {
+			return err
+		}
 	}
 
 	return nil

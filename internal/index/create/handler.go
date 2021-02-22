@@ -30,13 +30,13 @@ func NewHandler(a app.IApp) IHandler {
 }
 
 type HandlerFlags struct {
-	IndexName string
-	IndexBody []byte
+	Name string
+	Body []byte
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	indexName := flags.IndexName
-	indexBody := flags.IndexBody
+	indexName := flags.Name
+	indexBody := flags.Body
 	resp, err := h.esHelper.CreateIndex(indexName, indexBody)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 	if err != nil {
 		return nil, err
 	}
-	handlerFlags.IndexName = flagName
+	handlerFlags.Name = flagName
 
 	// 处理 --body
 	flagBody, err := cmdFlags.GetString("body")
@@ -62,7 +62,7 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 		return nil, err
 	}
 	if flagBody != "" {
-		handlerFlags.IndexBody = []byte(flagBody)
+		handlerFlags.Body = []byte(flagBody)
 	}
 
 	// 处理 --file
@@ -82,7 +82,7 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 		defer bodyFile.Close()
 
 		bodyBytes, _ := ioutil.ReadAll(bodyFile)
-		handlerFlags.IndexBody = bodyBytes
+		handlerFlags.Body = bodyBytes
 	}
 
 	return handlerFlags, nil

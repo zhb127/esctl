@@ -1,18 +1,19 @@
 package cmd
 
 import (
+	"esctl/cmd/migrate"
+
 	"github.com/spf13/cobra"
 )
 
-var MigrateCmd = &cobra.Command{
+var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Manage migrations",
 	Long:  `Manage migrations`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-	},
 }
 
 func init() {
-	rootCmd.AddCommand(MigrateCmd)
+	rootCmd.AddCommand(migrateCmd)
+
+	migrateCmd.AddCommand(migrate.UpCmd)
 }
