@@ -8,7 +8,7 @@ import (
 )
 
 type IHandler interface {
-	Handle(indexNames []string) error
+	Run(indexNames []string) error
 }
 
 type handler struct {
@@ -23,7 +23,7 @@ func NewHandler(a app.IApp) IHandler {
 	}
 }
 
-func (h *handler) Handle(indexNames []string) error {
+func (h *handler) Run(indexNames []string) error {
 	if _, err := h.esHelper.DeleteIndices(indexNames...); err != nil {
 		return err
 	}

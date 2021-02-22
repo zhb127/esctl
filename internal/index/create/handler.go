@@ -13,8 +13,8 @@ import (
 )
 
 type IHandler interface {
+	Run(flags *HandlerFlags) error
 	ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error)
-	Handle(flags *HandlerFlags) error
 }
 
 type handler struct {
@@ -34,7 +34,7 @@ type HandlerFlags struct {
 	IndexBody []byte
 }
 
-func (h *handler) Handle(flags *HandlerFlags) error {
+func (h *handler) Run(flags *HandlerFlags) error {
 	indexName := flags.IndexName
 	indexBody := flags.IndexBody
 	resp, err := h.esHelper.CreateIndex(indexName, indexBody)

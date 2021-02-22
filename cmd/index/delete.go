@@ -23,7 +23,7 @@ var DeleteCmd = &cobra.Command{
 
 		app := app.New()
 		handler := delete.NewHandler(app)
-		if err := handler.Handle(args); err != nil {
+		if err := handler.Run(args); err != nil {
 			log.Fatal(err)
 		}
 	},

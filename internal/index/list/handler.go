@@ -13,8 +13,8 @@ import (
 )
 
 type IHandler interface {
+	Run(flags *HandlerFlags, args []string) error
 	ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error)
-	Handle(flags *HandlerFlags, args []string) error
 }
 
 type handler struct {
@@ -34,7 +34,7 @@ type HandlerFlags struct {
 	All    bool
 }
 
-func (h *handler) Handle(flags *HandlerFlags, indexNameWildcardExps []string) error {
+func (h *handler) Run(flags *HandlerFlags, indexNameWildcardExps []string) error {
 	resp, err := h.esHelper.ListIndices(indexNameWildcardExps...)
 	if err != nil {
 		return err

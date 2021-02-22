@@ -19,7 +19,7 @@ var CreateCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := handler.Handle(handlerFlags); err != nil {
+		if err := handler.Run(handlerFlags); err != nil {
 			log.Fatal(err)
 		}
 	},

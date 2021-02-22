@@ -10,7 +10,7 @@ import (
 )
 
 type IHandler interface {
-	Handle(flags *HandlerFlags) error
+	Run(flags *HandlerFlags) error
 	ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error)
 }
 
@@ -31,7 +31,7 @@ type HandlerFlags struct {
 	AliasName string
 }
 
-func (h *handler) Handle(flags *HandlerFlags) error {
+func (h *handler) Run(flags *HandlerFlags) error {
 	resp, err := h.esHelper.UnaliasIndex(flags.IndexName, []string{flags.AliasName})
 	if err != nil {
 		return err

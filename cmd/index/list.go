@@ -19,7 +19,7 @@ var ListCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		if err := handler.Handle(handlerFlags, args); err != nil {
+		if err := handler.Run(handlerFlags, args); err != nil {
 			log.Fatal(err)
 		}
 	},
