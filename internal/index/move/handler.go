@@ -1,4 +1,4 @@
-package migrate
+package move
 
 import (
 	"esctl/internal/index/app"

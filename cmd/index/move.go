@@ -2,19 +2,19 @@ package index
 
 import (
 	"esctl/internal/index/app"
-	"esctl/internal/index/migrate"
+	"esctl/internal/index/move"
 	"log"
 
 	"github.com/spf13/cobra"
 )
 
-var MigrateCmd = &cobra.Command{
-	Use:   "migrate",
-	Short: "Create migration",
-	Long:  `Create migration`,
+var MoveCmd = &cobra.Command{
+	Use:   "move",
+	Short: "Move src index to dest index",
+	Long:  `Move src index to dest index`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := app.New()
-		handler := migrate.NewHandler(app)
+		handler := move.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
 			log.Fatal(err)
@@ -26,7 +26,7 @@ var MigrateCmd = &cobra.Command{
 }
 
 func init() {
-	flags := MigrateCmd.Flags()
+	flags := MoveCmd.Flags()
 	flags.StringP("src", "s", "", "The src index name")
 	flags.StringP("dest", "d", "", "The dest index name")
 	flags.BoolP("purge", "p", false, "Delete src index after migrate success")
