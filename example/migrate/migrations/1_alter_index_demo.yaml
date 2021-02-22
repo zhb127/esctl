@@ -1,0 +1,13 @@
+cmds:
+- cmd: index-create
+  args:
+  flags:
+    name: demo-v2
+    body: '''
+{"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"},"name":{"type":"text","fields":{"keyword":{"type":"keyword","ignore_above":256}}}}}}
+'''
+- cmd: index-migrate
+  flags:
+    src: demo-v1
+    dest: demo-v2
+    purge: true

@@ -1,0 +1,7 @@
+stages:
+- action: index-create
+  params:
+    indexName: demo-v1
+    indexBody: '''
+{"aliases":{"demo":{}},"mappings":{"date_detection":false,"properties":{"id":{"type":"long"}}}}
+'''
