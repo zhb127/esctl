@@ -1,8 +1,8 @@
 package alias
 
 import (
+	"esctl/internal/app"
 	"esctl/internal/index/alias/delete"
-	"esctl/internal/index/app"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -12,7 +12,7 @@ var DeleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete index alias",
 	Long:  `Delete index alias`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := delete.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())

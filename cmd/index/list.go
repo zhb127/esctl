@@ -1,7 +1,7 @@
 package index
 
 import (
-	"esctl/internal/index/app"
+	"esctl/internal/app"
 	"esctl/internal/index/list"
 	"log"
 

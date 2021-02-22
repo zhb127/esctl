@@ -3,7 +3,7 @@ package version
 import (
 	"bytes"
 	"encoding/json"
-	"esctl/internal/version/app"
+	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"fmt"

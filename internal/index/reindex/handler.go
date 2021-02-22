@@ -2,7 +2,7 @@ package reindex
 
 import (
 	"encoding/json"
-	"esctl/internal/index/app"
+	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"fmt"

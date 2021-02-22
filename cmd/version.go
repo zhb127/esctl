@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"esctl/internal/app"
 	"esctl/internal/version"
-	"esctl/internal/version/app"
 	"log"
 
 	"github.com/spf13/cobra"

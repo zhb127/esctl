@@ -1,8 +1,8 @@
 package alias
 
 import (
+	"esctl/internal/app"
 	"esctl/internal/index/alias/create"
-	"esctl/internal/index/app"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -12,7 +12,7 @@ var CreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create index alias",
 	Long:  `Create index alias`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := create.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())

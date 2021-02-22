@@ -1,7 +1,7 @@
 package create
 
 import (
-	"esctl/internal/index/app"
+	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"fmt"

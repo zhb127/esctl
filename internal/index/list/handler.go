@@ -1,7 +1,7 @@
 package list
 
 import (
-	"esctl/internal/index/app"
+	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"os"
