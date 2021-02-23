@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
+	indexAliasCreate "esctl/internal/index/alias/create"
 	indexCreate "esctl/internal/index/create"
 	indexMove "esctl/internal/index/move"
 )
@@ -27,16 +28,18 @@ type handler struct {
 }
 
 type handlerSubHandlers struct {
-	IndexCreate indexCreate.IHandler
-	IndexMove   indexMove.IHandler
+	IndexCreate      indexCreate.IHandler
+	IndexMove        indexMove.IHandler
+	IndexAliasCreate indexAliasCreate.IHandler
 }
 
 func NewHandler(a app.IApp) IHandler {
 	return &handler{
 		logHelper: a.LogHelper(),
 		subHandlers: &handlerSubHandlers{
-			IndexCreate: indexCreate.NewHandler(a),
-			IndexMove:   indexMove.NewHandler(a),
+			IndexCreate:      indexCreate.NewHandler(a),
+			IndexMove:        indexMove.NewHandler(a),
+			IndexAliasCreate: indexAliasCreate.NewHandler(a),
 		},
 	}
 }
@@ -181,6 +184,14 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Purge: v.Flags["purge"].(bool),
 			}
 			if err := h.subHandlers.IndexMove.Run(flags); err != nil {
+				return err
+			}
+		case "index-alias-create":
+			flags := &indexAliasCreate.HandlerFlags{
+				Index: v.Flags["index"].(string),
+				Alias: v.Flags["alias"].(string),
+			}
+			if err := h.subHandlers.IndexAliasCreate.Run(flags); err != nil {
 				return err
 			}
 		}
