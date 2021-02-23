@@ -1,9 +1,9 @@
 package index
 
 import (
+	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/index/delete"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var DeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			if err := cmd.Help(); err != nil {
-				log.Fatal(err)
+				infra.LogHelper.Fatal(err.Error(), nil)
 			}
 			os.Exit(1)
 		}
@@ -24,7 +24,7 @@ var DeleteCmd = &cobra.Command{
 		app := app.New()
 		handler := delete.NewHandler(app)
 		if err := handler.Run(args); err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 	},
 }

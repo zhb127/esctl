@@ -1,9 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"os"
 	"strconv"
+
+	defaults "github.com/mcuadros/go-defaults"
+	homedir "github.com/mitchellh/go-homedir"
+	flag "github.com/spf13/pflag"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 type config struct {
@@ -55,9 +61,47 @@ type ContextsItemContext struct {
 	User    string `mapstructure:"user"`
 }
 
-func injectFlagsToConfig(cfg *config) error {
-	persistenFlags := rootCmd.PersistentFlags()
-	flagCluster, err := persistenFlags.GetString("cluster")
+func initConfig(cfgFilePath string, pFlags *flag.FlagSet) (*config, error) {
+	if cfgFilePath == "" {
+		home, err := homedir.Dir()
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to return home dir")
+		}
+		cfgFilePath = home + "/.esctl/config"
+	}
+
+	viper.SetConfigFile(cfgFilePath)
+	viper.SetConfigType("yaml")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, errors.Wrap(err, "failed to read config file err")
+	}
+
+	// 设置默认配置值
+	cfg := &config{}
+	defaults.SetDefaults(cfg)
+
+	if err := viper.Unmarshal(cfg); err != nil {
+		return nil, errors.Wrap(err, "failed to parse config file err")
+	}
+
+	if err := mergeFlagsToConfig(pFlags, cfg); err != nil {
+		return nil, errors.Wrap(err, "failed to convert rootCmd pFlags to config")
+	}
+
+	if err := validateConfig(cfg); err != nil {
+		return nil, errors.Wrap(err, "failed to validate config")
+	}
+
+	if err := injectConfigToEnvVars(cfg); err != nil {
+		return nil, errors.Wrap(err, "failed to inject config to env vars")
+	}
+
+	return cfg, nil
+}
+
+func mergeFlagsToConfig(pFlags *flag.FlagSet, cfg *config) error {
+	flagCluster, err := pFlags.GetString("cluster")
 	if err != nil {
 		return err
 	}
@@ -65,7 +109,7 @@ func injectFlagsToConfig(cfg *config) error {
 		cfg.CurrentClusterName = flagCluster
 	}
 
-	flagUser, err := persistenFlags.GetString("user")
+	flagUser, err := pFlags.GetString("user")
 	if err != nil {
 		return err
 	}
@@ -73,7 +117,7 @@ func injectFlagsToConfig(cfg *config) error {
 		cfg.CurrentUserName = flagUser
 	}
 
-	flagContext, err := persistenFlags.GetString("context")
+	flagContext, err := pFlags.GetString("context")
 	if err != nil {
 		return err
 	}
@@ -141,13 +185,34 @@ func validateConfig(cfg *config) error {
 	return nil
 }
 
-func injectConfigToEnvVars(cfg *config) {
-	os.Setenv("LOG_LEVEL", cfg.Log.Level)
-	os.Setenv("LOG_FORMAT", cfg.Log.Format)
+func injectConfigToEnvVars(cfg *config) error {
+	if err := os.Setenv("LOG_LEVEL", cfg.Log.Level); err != nil {
+		return err
+	}
 
-	os.Setenv("ES_ADDRESSES", cfg.CurrentClusterItem.Cluster.Addresses)
-	os.Setenv("ES_USERNAME", cfg.CurrentUserItem.User.Username)
-	os.Setenv("ES_PASSWORD", cfg.CurrentUserItem.User.Password)
-	os.Setenv("ES_CERT_DATA", cfg.CurrentUserItem.User.CertData)
-	os.Setenv("ES_CERT_VERIFY", strconv.FormatBool(cfg.CurrentUserItem.User.CertVerify))
+	if err := os.Setenv("LOG_FORMAT", cfg.Log.Format); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("ES_ADDRESSES", cfg.CurrentClusterItem.Cluster.Addresses); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("ES_USERNAME", cfg.CurrentUserItem.User.Username); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("ES_PASSWORD", cfg.CurrentUserItem.User.Password); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("ES_CERT_DATA", cfg.CurrentUserItem.User.CertData); err != nil {
+		return err
+	}
+
+	if err := os.Setenv("ES_CERT_VERIFY", strconv.FormatBool(cfg.CurrentUserItem.User.CertVerify)); err != nil {
+		return err
+	}
+
+	return nil
 }

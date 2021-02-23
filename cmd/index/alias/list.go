@@ -1,9 +1,9 @@
 package alias
 
 import (
+	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/index/alias/list"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -17,10 +17,10 @@ var ListCmd = &cobra.Command{
 		handler := list.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 		if err := handler.Run(handlerFlags); err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 	},
 }

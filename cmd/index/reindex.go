@@ -1,9 +1,9 @@
 package index
 
 import (
+	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/index/reindex"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -17,10 +17,10 @@ var ReindexCmd = &cobra.Command{
 		handler := reindex.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 		if err := handler.Handle(handlerFlags); err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 	},
 }
@@ -31,10 +31,10 @@ func init() {
 	flags.StringP("dest", "d", "", "The dest index name")
 
 	if err := cobra.MarkFlagRequired(flags, "src"); err != nil {
-		log.Fatal(err)
+		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 
 	if err := cobra.MarkFlagRequired(flags, "dest"); err != nil {
-		log.Fatal(err)
+		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 }

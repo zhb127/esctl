@@ -1,9 +1,9 @@
 package migrate
 
 import (
+	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/migrate/up"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -17,11 +17,12 @@ var UpCmd = &cobra.Command{
 		handler := up.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 		if err := handler.Run(handlerFlags); err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
+		infra.LogHelper.Info("success", nil)
 	},
 }
 
@@ -32,6 +33,6 @@ func init() {
 	flags.StringP("to", "", "", "File name(without ext) to end migration")
 
 	if err := cobra.MarkFlagRequired(flags, "dir"); err != nil {
-		log.Fatal(err)
+		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 }

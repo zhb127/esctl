@@ -1,9 +1,9 @@
 package index
 
 import (
+	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/index/move"
-	"log"
 
 	"github.com/spf13/cobra"
 )
@@ -17,10 +17,10 @@ var MoveCmd = &cobra.Command{
 		handler := move.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 		if err := handler.Run(handlerFlags); err != nil {
-			log.Fatal(err)
+			infra.LogHelper.Fatal(err.Error(), nil)
 		}
 	},
 }
@@ -32,10 +32,10 @@ func init() {
 	flags.BoolP("purge", "p", false, "Delete src index after migrate success")
 
 	if err := cobra.MarkFlagRequired(flags, "src"); err != nil {
-		log.Fatal(err)
+		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 
 	if err := cobra.MarkFlagRequired(flags, "dest"); err != nil {
-		log.Fatal(err)
+		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 }

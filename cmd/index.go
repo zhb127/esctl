@@ -8,8 +8,8 @@ import (
 
 var indexCmd = &cobra.Command{
 	Use:   "index",
-	Short: "Manage ES indices",
-	Long:  `Manage ES indices`,
+	Short: "Manage indices",
+	Long:  `Manage indices`,
 }
 
 func init() {
