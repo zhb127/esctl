@@ -1,5 +1,5 @@
 cmds:
-- cmd: "index create"
+- cmd: "index-create"
   flags:
     name: demo-v1
     body: |-
