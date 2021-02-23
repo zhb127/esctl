@@ -27,12 +27,12 @@ func NewHandler(a app.IApp) IHandler {
 }
 
 type HandlerFlags struct {
-	IndexName string
-	AliasName string
+	Index string
+	Alias string
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	resp, err := h.esHelper.AliasIndex(flags.IndexName, flags.AliasName)
+	resp, err := h.esHelper.AliasIndex(flags.Index, flags.Alias)
 	if err != nil {
 		return err
 	}
@@ -48,13 +48,13 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 	if err != nil {
 		return nil, err
 	}
-	handlerFlags.IndexName = flagIndex
+	handlerFlags.Index = flagIndex
 
 	flagAlias, err := cmdFlags.GetString("alias")
 	if err != nil {
 		return nil, err
 	}
-	handlerFlags.AliasName = flagAlias
+	handlerFlags.Alias = flagAlias
 
 	return handlerFlags, nil
 }
