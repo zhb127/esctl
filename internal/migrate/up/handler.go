@@ -68,7 +68,7 @@ func (h *handler) Run(flags *HandlerFlags) error {
 
 		// 后缀名不一致，则跳过
 		if mgrFileExt != ".yaml" && mgrFileExt != ".yml" {
-			h.logHelper.Warn("ignore file because of the file ext is not (.yaml|.yml)", map[string]interface{}{
+			h.logHelper.Warn("file ext is not (.yaml|.yml)", map[string]interface{}{
 				"file": mgrFileName,
 				"ext":  mgrFileExt,
 			})
@@ -78,17 +78,25 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		// 判断是否开始
 		if flags.From != "" {
 			if flags.From != mgrFileNameWithoutExt {
-				h.logHelper.Debug("ignore file because of the file is not match --from", map[string]interface{}{
+				h.logHelper.Debug("file did not match --from, not start", map[string]interface{}{
 					"file": mgrFileName,
 				})
 				continue
 			}
 		}
 
+		h.logHelper.Debug("start parse migration file", map[string]interface{}{
+			"file": mgrFilePath,
+		})
+
 		migration, err := h.parseMigrationFile(mgrFilePath)
 		if err != nil {
 			return err
 		}
+
+		h.logHelper.Debug("start exec migration file", map[string]interface{}{
+			"file": mgrFilePath,
+		})
 
 		if err := h.execMigration(migration); err != nil {
 			return err
@@ -97,7 +105,7 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		// 判断是否结束
 		if flags.To != "" {
 			if flags.To == mgrFileNameWithoutExt {
-				h.logHelper.Debug("end because of the file is match --to ", map[string]interface{}{
+				h.logHelper.Debug("file match --to, done", map[string]interface{}{
 					"file": mgrFileName,
 				})
 				break
@@ -167,6 +175,10 @@ func (h *handler) parseMigrationFile(file string) (*migrate.Migration, error) {
 }
 
 func (h *handler) execMigration(migration *migrate.Migration) error {
+	h.logHelper.Debug("exec migration", map[string]interface{}{
+		"migration": migration,
+	})
+
 	for _, v := range migration.CMDs {
 		switch v.CMD {
 		case "index-create":
@@ -194,6 +206,8 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 			if err := h.subHandlers.IndexAliasCreate.Run(flags); err != nil {
 				return err
 			}
+		default:
+			return errors.Errorf("cmd=%v not supported", v.CMD)
 		}
 	}
 
