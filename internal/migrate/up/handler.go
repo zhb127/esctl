@@ -48,10 +48,14 @@ type HandlerFlags struct {
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	mgrFiles, err := h.ListMigrationFiles(flags.Dir)
+	mgrFiles, err := h.listMigrationFiles(flags.Dir)
 	if err != nil {
 		return err
 	}
+
+	h.logHelper.Debug("list migration files", map[string]interface{}{
+		"count": len(mgrFiles),
+	})
 
 	for _, mgrFile := range mgrFiles {
 		mgrFileName := mgrFile.Name()
@@ -60,9 +64,10 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		mgrFileNameWithoutExt := strings.TrimSuffix(mgrFileName, mgrFileExt)
 
 		// 后缀名不一致，则跳过
-		if mgrFileExt != "yaml" && mgrFileExt != "yml" {
-			h.logHelper.Debug("ignore file because of the file ext is not (.yaml|.yml)", map[string]interface{}{
+		if mgrFileExt != ".yaml" && mgrFileExt != ".yml" {
+			h.logHelper.Warn("ignore file because of the file ext is not (.yaml|.yml)", map[string]interface{}{
 				"file": mgrFileName,
+				"ext":  mgrFileExt,
 			})
 			continue
 		}
@@ -70,22 +75,28 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		// 判断是否开始
 		if flags.From != "" {
 			if flags.From != mgrFileNameWithoutExt {
+				h.logHelper.Debug("ignore file because of the file is not match --from", map[string]interface{}{
+					"file": mgrFileName,
+				})
 				continue
 			}
 		}
 
-		migration, err := h.ParseMigrationFile(mgrFilePath)
+		migration, err := h.parseMigrationFile(mgrFilePath)
 		if err != nil {
 			return err
 		}
 
-		if err := h.ExecMigration(migration); err != nil {
+		if err := h.execMigration(migration); err != nil {
 			return err
 		}
 
 		// 判断是否结束
 		if flags.To != "" {
 			if flags.To == mgrFileNameWithoutExt {
+				h.logHelper.Debug("end because of the file is match --to ", map[string]interface{}{
+					"file": mgrFileName,
+				})
 				break
 			}
 		}
@@ -121,7 +132,7 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 	return handlerFlags, nil
 }
 
-func (h *handler) ListMigrationFiles(dir string) ([]os.FileInfo, error) {
+func (h *handler) listMigrationFiles(dir string) ([]os.FileInfo, error) {
 	fd, err := os.Open(dir)
 	if err != nil {
 		return nil, err
@@ -136,7 +147,7 @@ func (h *handler) ListMigrationFiles(dir string) ([]os.FileInfo, error) {
 	return res, nil
 }
 
-func (h *handler) ParseMigrationFile(file string) (*migrate.Migration, error) {
+func (h *handler) parseMigrationFile(file string) (*migrate.Migration, error) {
 	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")
 
@@ -152,7 +163,7 @@ func (h *handler) ParseMigrationFile(file string) (*migrate.Migration, error) {
 	return res, nil
 }
 
-func (h *handler) ExecMigration(migration *migrate.Migration) error {
+func (h *handler) execMigration(migration *migrate.Migration) error {
 	for _, v := range migration.CMDs {
 		switch v.CMD {
 		case "index-create":
