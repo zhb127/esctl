@@ -6,6 +6,7 @@ import (
 	"esctl/pkg/log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -51,17 +52,16 @@ type HandlerFlags struct {
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	mgrFiles, err := h.listMigrationFiles(flags.Dir)
+	mgrFileNames, err := h.listMigrationFileNames(flags.Dir)
 	if err != nil {
 		return err
 	}
 
 	h.logHelper.Debug("list migration files", map[string]interface{}{
-		"count": len(mgrFiles),
+		"count": len(mgrFileNames),
 	})
 
-	for _, mgrFile := range mgrFiles {
-		mgrFileName := mgrFile.Name()
+	for _, mgrFileName := range mgrFileNames {
 		mgrFilePath := flags.Dir + "/" + mgrFileName
 		mgrFileExt := path.Ext(mgrFilePath)
 		mgrFileNameWithoutExt := strings.TrimSuffix(mgrFileName, mgrFileExt)
@@ -143,17 +143,24 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 	return handlerFlags, nil
 }
 
-func (h *handler) listMigrationFiles(dir string) ([]os.FileInfo, error) {
+func (h *handler) listMigrationFileNames(dir string) ([]string, error) {
 	fd, err := os.Open(dir)
 	if err != nil {
 		return nil, err
 	}
 	defer fd.Close()
 
-	res, err := fd.Readdir(-1)
+	files, err := fd.Readdir(-1)
 	if err != nil {
 		return nil, err
 	}
+
+	var res []string
+	for _, file := range files {
+		res = append(res, file.Name())
+	}
+
+	sort.Strings(res)
 
 	return res, nil
 }
