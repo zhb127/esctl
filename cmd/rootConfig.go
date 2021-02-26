@@ -67,14 +67,15 @@ func initConfig(cfgFilePath string, pFlags *flag.FlagSet) (*config, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to return home dir")
 		}
-		cfgFilePath = home + "/.esctl/config"
+		cfgFileDir := home + "/.esctl"
+		cfgFilePath = cfgFileDir + "/config"
 
 		if _, err := os.Stat(cfgFilePath); err != nil {
 			if !os.IsNotExist(err) {
 				return nil, errors.Wrap(err, "failed to check config file state")
 			}
 			// 生成示例配置
-			if err := genExampleConfig(cfgFilePath); err != nil {
+			if err := genExampleConfig(cfgFileDir, cfgFilePath); err != nil {
 				return nil, errors.Wrap(err, "failed to generate example config")
 			}
 		}
@@ -110,7 +111,11 @@ func initConfig(cfgFilePath string, pFlags *flag.FlagSet) (*config, error) {
 	return cfg, nil
 }
 
-func genExampleConfig(path string) error {
+func genExampleConfig(dir string, path string) error {
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return err
+	}
+
 	f, err := os.Create(path)
 	if err != nil {
 		return err
