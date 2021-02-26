@@ -68,6 +68,16 @@ func initConfig(cfgFilePath string, pFlags *flag.FlagSet) (*config, error) {
 			return nil, errors.Wrap(err, "failed to return home dir")
 		}
 		cfgFilePath = home + "/.esctl/config"
+
+		if _, err := os.Stat(cfgFilePath); err != nil {
+			if !os.IsNotExist(err) {
+				return nil, errors.Wrap(err, "failed to check config file state")
+			}
+			// 生成示例配置
+			if err := genExampleConfig(cfgFilePath); err != nil {
+				return nil, errors.Wrap(err, "failed to generate example config")
+			}
+		}
 	}
 
 	viper.SetConfigFile(cfgFilePath)
@@ -98,6 +108,40 @@ func initConfig(cfgFilePath string, pFlags *flag.FlagSet) (*config, error) {
 	}
 
 	return cfg, nil
+}
+
+func genExampleConfig(path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.Write([]byte(`# example config
+log:
+  level: debug
+  format: pretty
+clusters:
+- name: localhost
+  cluster:
+    addresses: http://localhost:9200
+users:
+- name: localhost
+  user:
+    username:
+    password:
+    certVerify:
+    certContent:
+contexts:
+- name: localhost
+  context:
+    cluster: localhost
+    user: localhost
+current-context: localhost
+`))
+
+	return err
 }
 
 func mergeFlagsToConfig(pFlags *flag.FlagSet, cfg *config) error {
