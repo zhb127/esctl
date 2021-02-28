@@ -67,10 +67,11 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		mgrFileNameWithoutExt := strings.TrimSuffix(mgrFileName, mgrFileExt)
 
 		// 后缀名不一致，则跳过
-		if mgrFileExt != ".yaml" && mgrFileExt != ".yml" {
-			h.logHelper.Warn("file ext is not (.yaml|.yml)", map[string]interface{}{
-				"file": mgrFileName,
-				"ext":  mgrFileExt,
+		if mgrFileExt != migrate.MIGRATION_FILE_EXT {
+			h.logHelper.Warn("file ext is invalid, skipped", map[string]interface{}{
+				"file":              mgrFileName,
+				"file_ext":          mgrFileExt,
+				"expected_file_ext": migrate.MIGRATION_FILE_EXT,
 			})
 			continue
 		}
@@ -78,7 +79,7 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		// 判断是否开始
 		if flags.From != "" {
 			if flags.From != mgrFileNameWithoutExt {
-				h.logHelper.Debug("file did not match --from, not start", map[string]interface{}{
+				h.logHelper.Debug("file did not match --from, skipped", map[string]interface{}{
 					"file": mgrFileName,
 				})
 				continue

@@ -1,6 +1,8 @@
 package migrate
 
+var MIGRATION_FILE_EXT = ".yaml"
+
 var (
-	MIGRATION_UP_EXT   = ".up.yaml"
-	MIGRATION_DOWN_EXT = ".down.yaml"
+	MIGRATION_UP_FILE_EXT   = ".up" + MIGRATION_FILE_EXT
+	MIGRATION_DOWN_FILE_EXT = ".down" + MIGRATION_FILE_EXT
 )

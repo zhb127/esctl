@@ -53,8 +53,8 @@ func (h *handler) Run(flags *HandlerFlags) error {
 
 	// 生成迁移文件路径
 	mgrVer := time.Now().Format("20060102150405")
-	mgrUpFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_UP_EXT
-	mgrDownFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_DOWN_EXT
+	mgrUpFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_UP_FILE_EXT
+	mgrDownFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_DOWN_FILE_EXT
 
 	// 创建向上迁移文件
 	mgrUpFile, err := os.Create(mgrUpFilePath)
