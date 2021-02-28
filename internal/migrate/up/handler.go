@@ -3,6 +3,7 @@ package up
 import (
 	"esctl/internal/app"
 	"esctl/internal/migrate"
+	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"os"
 	"path"
@@ -25,6 +26,7 @@ type IHandler interface {
 
 type handler struct {
 	logHelper   log.IHelper
+	esHelper    es.IHelper
 	subHandlers *handlerSubHandlers
 }
 
@@ -37,6 +39,7 @@ type handlerSubHandlers struct {
 func NewHandler(a app.IApp) IHandler {
 	return &handler{
 		logHelper: a.LogHelper(),
+		esHelper:  a.ESHelper(),
 		subHandlers: &handlerSubHandlers{
 			IndexCreate:      indexCreate.NewHandler(a),
 			IndexMove:        indexMove.NewHandler(a),
@@ -67,11 +70,11 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		mgrFileNameWithoutExt := strings.TrimSuffix(mgrFileName, mgrFileExt)
 
 		// 后缀名不一致，则跳过
-		if mgrFileExt != migrate.MIGRATION_FILE_EXT {
+		if mgrFileExt != migrate.MGR_FILE_EXT {
 			h.logHelper.Warn("file ext is invalid, skipped", map[string]interface{}{
 				"file":              mgrFileName,
 				"file_ext":          mgrFileExt,
-				"expected_file_ext": migrate.MIGRATION_FILE_EXT,
+				"expected_file_ext": migrate.MGR_FILE_EXT,
 			})
 			continue
 		}
@@ -100,6 +103,11 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		})
 
 		if err := h.execMigration(migration); err != nil {
+			return err
+		}
+
+		// 记录迁移历史
+		if err := h.logMigrationHistory(mgrFileNameWithoutExt); err != nil {
 			return err
 		}
 
@@ -217,6 +225,29 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 		default:
 			return errors.Errorf("cmd=%v not supported", v.CMD)
 		}
+	}
+
+	return nil
+}
+
+func (h *handler) getLastMigrationHistory() (interface{}, error) {
+	resp, err := h.esHelper.ListDocs(migrate.MGR_HISTORY_ES_INDEX, []byte(`{"size":1,"sort":[{"id":{"order":"desc"}}]}`))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.Hits.Hits) == 0 {
+		return nil, nil
+	}
+
+	result := resp.Hits.Hits[0]
+
+	return result, err
+}
+
+func (h *handler) logMigrationHistory(name string) error {
+	if err := h.esHelper.SaveDoc(migrate.MGR_HISTORY_ES_INDEX, name, nil); err != nil {
+		return err
 	}
 
 	return nil
