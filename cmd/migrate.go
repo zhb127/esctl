@@ -16,4 +16,5 @@ func init() {
 	rootCmd.AddCommand(migrateCmd)
 
 	migrateCmd.AddCommand(migrate.UpCmd)
+	migrateCmd.AddCommand(migrate.CreateCmd)
 }

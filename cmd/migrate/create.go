@@ -3,18 +3,18 @@ package migrate
 import (
 	"esctl/cmd/infra"
 	"esctl/internal/app"
-	"esctl/internal/migrate/up"
+	"esctl/internal/migrate/create"
 
 	"github.com/spf13/cobra"
 )
 
-var UpCmd = &cobra.Command{
-	Use:   "up",
-	Short: "Exec migration up|down file",
-	Long:  `Exec migration up|down file`,
+var CreateCmd = &cobra.Command{
+	Use:   "create",
+	Short: "Create migration up/down files",
+	Long:  `Create migration up/down files`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
-		handler := up.NewHandler(app)
+		handler := create.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
 			infra.LogHelper.Fatal(err.Error(), nil)
@@ -22,17 +22,19 @@ var UpCmd = &cobra.Command{
 		if err := handler.Run(handlerFlags); err != nil {
 			infra.LogHelper.Fatal(err.Error(), nil)
 		}
-		infra.LogHelper.Info("success", nil)
 	},
 }
 
 func init() {
-	flags := UpCmd.Flags()
+	flags := CreateCmd.Flags()
 	flags.StringP("dir", "d", "", "The migrations dir")
-	flags.StringP("from", "", "", "File name(without ext) to start migration")
-	flags.StringP("to", "", "", "File name(without ext) to end migration")
+	flags.StringP("name", "n", "", "The migration name")
 
 	if err := cobra.MarkFlagRequired(flags, "dir"); err != nil {
+		infra.LogHelper.Fatal(err.Error(), nil)
+	}
+
+	if err := cobra.MarkFlagRequired(flags, "name"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 }
