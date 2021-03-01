@@ -10,8 +10,8 @@ import (
 
 var UpCmd = &cobra.Command{
 	Use:   "up",
-	Short: "Exec migration up|down file",
-	Long:  `Exec migration up|down file`,
+	Short: "Exec up/down migration file",
+	Long:  `Exec up/down migration file`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := up.NewHandler(app)
@@ -31,6 +31,7 @@ func init() {
 	flags.StringP("dir", "d", "", "The migrations dir")
 	flags.StringP("from", "", "", "File name(without ext) to start migration")
 	flags.StringP("to", "", "", "File name(without ext) to end migration")
+	flags.BoolP("reverse", "r", false, "Run migrate down")
 
 	if err := cobra.MarkFlagRequired(flags, "dir"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)
