@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"esctl/pkg/log"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -145,6 +146,9 @@ func (h *helper) ListIndices(indexNameWildcardExps ...string) (*ListIndicesResp,
 	}
 	defer resp.Body.Close()
 	if resp.IsError() {
+		if resp.StatusCode == http.StatusNotFound {
+			return &ListIndicesResp{}, nil
+		}
 		return nil, errors.New(resp.String())
 	}
 
