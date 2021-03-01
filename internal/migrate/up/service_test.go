@@ -144,7 +144,7 @@ func Test_service_DeleteMigrationHistoryEntry(t *testing.T) {
 	}
 }
 
-func Test_service_GetLastMigrationName(t *testing.T) {
+func Test_service_GetUpMigrationNameLastExecuted(t *testing.T) {
 	mockLogHelper := tdLog.MockHelper()
 	mockESHelper := tdES.MockHelper(mockLogHelper)
 
@@ -173,13 +173,13 @@ func Test_service_GetLastMigrationName(t *testing.T) {
 				logHelper: tt.fields.logHelper,
 				esHelper:  tt.fields.esHelper,
 			}
-			got, err := s.GetLastMigrationName()
+			got, err := s.GetUpMigrationNameLastExecuted()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("service.GetLastMigrationName() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("service.GetUpMigrationNameLastExecuted() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("service.GetLastMigrationName() = %v, want %v", got, tt.want)
+				t.Errorf("service.GetUpMigrationNameLastExecuted() = %v, want %v", got, tt.want)
 			}
 		})
 	}

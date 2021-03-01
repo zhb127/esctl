@@ -18,7 +18,7 @@ type IService interface {
 	InitMigrationHistoryRepo() error
 	SaveMigrationHistoryEntry(name string) error
 	DeleteMigrationHistoryEntry(name string) error
-	GetLastMigrationName() (string, error)
+	GetUpMigrationNameLastExecuted() (string, error)
 }
 
 type service struct {
@@ -78,8 +78,8 @@ func (s *service) DeleteMigrationHistoryEntry(name string) error {
 	return nil
 }
 
-// 获取最后迁移名称
-func (s *service) GetLastMigrationName() (string, error) {
+// 获取最后执行的迁移名称
+func (s *service) GetUpMigrationNameLastExecuted() (string, error) {
 	esIndexName := migrate.MIGRATION_HISTORY_ES_INDEX_NAME
 	esSearchBody := []byte(`{"sort":[{"_id":{"order":"desc"}}],"size":1}`)
 	listResp, err := s.esHelper.ListDocs(esIndexName, esSearchBody)

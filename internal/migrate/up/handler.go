@@ -99,14 +99,14 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 		"count": len(mgrFileNames),
 	})
 
-	// 获取最后迁移名称
-	lastMgrName, err := h.svcUp.GetLastMigrationName()
+	// 获取最后执行的迁移名称
+	mgrNameLastExecuted, err := h.svcUp.GetUpMigrationNameLastExecuted()
 	if err != nil {
 		return err
 	}
 
-	h.logHelper.Debug("get last migration name", map[string]interface{}{
-		"name": lastMgrName,
+	h.logHelper.Debug("get migration name last executed", map[string]interface{}{
+		"name": mgrNameLastExecuted,
 	})
 
 	isStartMigration := false
@@ -116,11 +116,11 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 
 		// 判断是否始执行迁移
 		if !isStartMigration {
-			if lastMgrName != "" {
-				if lastMgrName != mgrName {
+			if mgrNameLastExecuted != "" {
+				if mgrNameLastExecuted != mgrName {
 					h.logHelper.Debug("file did not match, skipped", map[string]interface{}{
-						"file":                fileName,
-						"last_migration_name": lastMgrName,
+						"file":          fileName,
+						"last_executed": mgrNameLastExecuted,
 					})
 					continue
 				} else {
@@ -161,7 +161,7 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 
 func (h *handler) runMigrateDown(flags *HandlerFlags) error {
 	// 获取最后迁移版本
-	lastMgrName, err := h.svcUp.GetLastMigrationName()
+	lastMgrName, err := h.svcUp.GetUpMigrationNameLastExecuted()
 	if err != nil {
 		return err
 	}
