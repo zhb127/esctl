@@ -112,7 +112,7 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 	isStartMigration := false
 	for _, fileName := range mgrFileNames {
 		mgrFilePath := flags.Dir + "/" + fileName
-		mgrName := strings.TrimSuffix(fileName, migrate.MIGRATION_UP_FILE_SUFFIX)
+		mgrName := strings.TrimSuffix(fileName, migrate.UP_MIGRATION_FILE_SUFFIX)
 
 		// 判断是否始执行迁移
 		if !isStartMigration {
@@ -173,7 +173,7 @@ func (h *handler) runMigrateDown(flags *HandlerFlags) error {
 	}
 
 	// 获取最后迁移文件
-	filePath := flags.Dir + "/" + lastMgrName + migrate.MIGRATION_DOWN_FILE_SUFFIX
+	filePath := flags.Dir + "/" + lastMgrName + migrate.DOWN_MIGRATION_FILE_SUFFIX
 
 	migration, err := h.parseMigrationFile(filePath)
 	if err != nil {
@@ -236,7 +236,7 @@ func (h *handler) listMigrateUpFileNames(dir string) ([]string, error) {
 	var res []string
 	for _, file := range files {
 		fName := file.Name()
-		if strings.HasSuffix(fName, migrate.MIGRATION_UP_FILE_SUFFIX) {
+		if strings.HasSuffix(fName, migrate.UP_MIGRATION_FILE_SUFFIX) {
 			res = append(res, fName)
 		}
 	}

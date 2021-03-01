@@ -34,8 +34,8 @@ type HandlerFlags struct {
 func (h *handler) Run(flags *HandlerFlags) error {
 	// 生成迁移文件路径
 	mgrNo := time.Now().Format("20060102150405")
-	mgrDownFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.MIGRATION_DOWN_FILE_SUFFIX
-	mgrUpFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.MIGRATION_UP_FILE_SUFFIX
+	mgrDownFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.DOWN_MIGRATION_FILE_SUFFIX
+	mgrUpFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.UP_MIGRATION_FILE_SUFFIX
 
 	// 创建向上迁移文件
 	mgrUpFile, err := os.Create(mgrUpFilePath)

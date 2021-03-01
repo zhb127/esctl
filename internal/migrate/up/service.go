@@ -115,7 +115,7 @@ func (s *service) listMigrateUpFileNames(dir string) ([]string, error) {
 	var res []string
 	for _, file := range files {
 		fName := file.Name()
-		if strings.HasSuffix(fName, migrate.MIGRATION_UP_FILE_SUFFIX) {
+		if strings.HasSuffix(fName, migrate.UP_MIGRATION_FILE_SUFFIX) {
 			res = append(res, fName)
 		}
 	}
