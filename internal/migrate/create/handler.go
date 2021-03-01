@@ -33,9 +33,9 @@ type HandlerFlags struct {
 
 func (h *handler) Run(flags *HandlerFlags) error {
 	// 生成迁移文件路径
-	mgrVer := time.Now().Format("20060102150405")
-	mgrUpFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_UP_FILE_SUFFIX
-	mgrDownFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_DOWN_FILE_SUFFIX
+	mgrNo := time.Now().Format("20060102150405")
+	mgrDownFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.MIGRATION_DOWN_FILE_SUFFIX
+	mgrUpFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.MIGRATION_UP_FILE_SUFFIX
 
 	// 创建向上迁移文件
 	mgrUpFile, err := os.Create(mgrUpFilePath)
@@ -43,7 +43,7 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		return errors.Wrap(err, "failed to create migration up file")
 	}
 	defer mgrUpFile.Close()
-	h.logHelper.Info("create migration up file", map[string]interface{}{"path": mgrUpFilePath})
+	h.logHelper.Info("create up migration file", map[string]interface{}{"path": mgrUpFilePath})
 
 	// 创建向下迁移文件
 	mgrDownFile, err := os.Create(mgrDownFilePath)
@@ -51,7 +51,7 @@ func (h *handler) Run(flags *HandlerFlags) error {
 		return errors.Wrap(err, "failed to create migration down file")
 	}
 	defer mgrDownFile.Close()
-	h.logHelper.Info("create migration down file", map[string]interface{}{"path": mgrDownFilePath})
+	h.logHelper.Info("create down migration file", map[string]interface{}{"path": mgrDownFilePath})
 
 	return nil
 }
@@ -81,7 +81,7 @@ func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 func (h *handler) validateHandlerFlags(flags *HandlerFlags) error {
 	mgrDir, err := os.Stat(flags.Dir)
 	if err != nil {
-		return errors.Wrap(err, "failed to check migrations file directory")
+		return errors.Wrap(err, "--dir invalid")
 	}
 	if !mgrDir.IsDir() {
 		return errors.New("--dir is not directory")
