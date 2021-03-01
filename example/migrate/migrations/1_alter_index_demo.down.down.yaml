@@ -1,0 +1,12 @@
+cmds:
+- cmd: "index-create"
+  args:
+  flags:
+    name: demo-v1
+    body: |-
+      {"mappings":{"date_detection":false,"properties":{"id":{"type":"long"}}}}
+- cmd: "index-move"
+  flags:
+    src: demo-v2
+    dest: demo-v1
+    purge: true

@@ -1,0 +1,4 @@
+cmds:
+- cmd: "index-delete"
+  args:
+  - "demo-v1"

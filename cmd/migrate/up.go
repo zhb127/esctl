@@ -10,8 +10,8 @@ import (
 
 var UpCmd = &cobra.Command{
 	Use:   "up",
-	Short: "Exec up/down migration file",
-	Long:  `Exec up/down migration file`,
+	Short: "Exec up migration file",
+	Long:  `Exec up migration file`,
 	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := up.NewHandler(app)

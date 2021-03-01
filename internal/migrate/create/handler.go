@@ -9,10 +9,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
-
-	indexAliasCreate "esctl/internal/index/alias/create"
-	indexCreate "esctl/internal/index/create"
-	indexMove "esctl/internal/index/move"
 )
 
 type IHandler interface {
@@ -22,12 +18,6 @@ type IHandler interface {
 
 type handler struct {
 	logHelper log.IHelper
-}
-
-type handlerSubHandlers struct {
-	IndexCreate      indexCreate.IHandler
-	IndexMove        indexMove.IHandler
-	IndexAliasCreate indexAliasCreate.IHandler
 }
 
 func NewHandler(a app.IApp) IHandler {
@@ -42,19 +32,10 @@ type HandlerFlags struct {
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	// 验证选项 --dir
-	mgrDir, err := os.Stat(flags.Dir)
-	if err != nil {
-		return errors.Wrap(err, "failed to check migrations file directory")
-	}
-	if !mgrDir.IsDir() {
-		return errors.New("--dir is not directory")
-	}
-
 	// 生成迁移文件路径
 	mgrVer := time.Now().Format("20060102150405")
-	mgrUpFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MGR_UP_FILE_EXT
-	mgrDownFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MGR_DOWN_FILE_EXT
+	mgrUpFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_UP_FILE_SUFFIX
+	mgrDownFilePath := flags.Dir + "/" + mgrVer + "_" + flags.Name + migrate.MIGRATION_DOWN_FILE_SUFFIX
 
 	// 创建向上迁移文件
 	mgrUpFile, err := os.Create(mgrUpFilePath)
@@ -75,20 +56,36 @@ func (h *handler) Run(flags *HandlerFlags) error {
 	return nil
 }
 
-func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
+func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	flagDir, err := cmdFlags.GetString("dir")
-	if err != nil {
+	if dir, err := flags.GetString("dir"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.Dir = dir
 	}
-	handlerFlags.Dir = flagDir
 
-	flagName, err := cmdFlags.GetString("name")
-	if err != nil {
+	if name, err := flags.GetString("name"); err != nil {
+		return nil, err
+	} else {
+		handlerFlags.Name = name
+	}
+
+	if err := h.validateHandlerFlags(handlerFlags); err != nil {
 		return nil, err
 	}
-	handlerFlags.Name = flagName
 
 	return handlerFlags, nil
+}
+
+func (h *handler) validateHandlerFlags(flags *HandlerFlags) error {
+	mgrDir, err := os.Stat(flags.Dir)
+	if err != nil {
+		return errors.Wrap(err, "failed to check migrations file directory")
+	}
+	if !mgrDir.IsDir() {
+		return errors.New("--dir is not directory")
+	}
+
+	return nil
 }

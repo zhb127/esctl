@@ -9,3 +9,7 @@ type MigrationCMD struct {
 	Args  []string
 	Flags map[string]interface{}
 }
+
+type MigrationHistoryEntry struct {
+	Name string
+}

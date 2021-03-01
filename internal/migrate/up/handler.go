@@ -6,7 +6,6 @@ import (
 	"esctl/pkg/es"
 	"esctl/pkg/log"
 	"os"
-	"path"
 	"sort"
 	"strings"
 
@@ -15,7 +14,9 @@ import (
 	"github.com/spf13/viper"
 
 	indexAliasCreate "esctl/internal/index/alias/create"
+	indexAliasDelete "esctl/internal/index/alias/delete"
 	indexCreate "esctl/internal/index/create"
+	indexDelete "esctl/internal/index/delete"
 	indexMove "esctl/internal/index/move"
 )
 
@@ -28,94 +29,127 @@ type handler struct {
 	logHelper   log.IHelper
 	esHelper    es.IHelper
 	subHandlers *handlerSubHandlers
+
+	svcUp IService
 }
 
 type handlerSubHandlers struct {
 	IndexCreate      indexCreate.IHandler
+	indexDelete      indexDelete.IHandler
 	IndexMove        indexMove.IHandler
 	IndexAliasCreate indexAliasCreate.IHandler
+	indexAliasDelete indexAliasDelete.IHandler
 }
 
 func NewHandler(a app.IApp) IHandler {
-	return &handler{
+	h := &handler{
 		logHelper: a.LogHelper(),
 		esHelper:  a.ESHelper(),
 		subHandlers: &handlerSubHandlers{
 			IndexCreate:      indexCreate.NewHandler(a),
+			indexDelete:      indexDelete.NewHandler(a),
 			IndexMove:        indexMove.NewHandler(a),
 			IndexAliasCreate: indexAliasCreate.NewHandler(a),
+			indexAliasDelete: indexAliasDelete.NewHandler(a),
 		},
 	}
+
+	h.svcUp = NewService(h.logHelper, h.esHelper)
+
+	return h
 }
 
 type HandlerFlags struct {
-	Dir  string
-	From string
-	To   string
+	Dir     string
+	From    string
+	To      string
+	Reverse bool
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	mgrFileNames, err := h.listMigrationFileNames(flags.Dir)
+	if err := h.svcUp.InitMigrationHistoryRepo(); err != nil {
+		h.logHelper.Error("failed to init migration history repo", map[string]interface{}{
+			"error": err.Error(),
+		})
+	}
+
+	if flags.Reverse {
+		return h.runMigrateDown(flags)
+	}
+
+	if err := h.runMigrateUp(flags); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *handler) runMigrateUp(flags *HandlerFlags) error {
+	// 列出迁移文件名称
+	mgrFileNames, err := h.listMigrateUpFileNames(flags.Dir)
 	if err != nil {
 		return err
+	}
+
+	if len(mgrFileNames) == 0 {
+		return errors.Errorf("there is no migration files")
 	}
 
 	h.logHelper.Debug("list migration files", map[string]interface{}{
 		"count": len(mgrFileNames),
 	})
 
-	for _, mgrFileName := range mgrFileNames {
-		mgrFilePath := flags.Dir + "/" + mgrFileName
-		mgrFileExt := path.Ext(mgrFilePath)
-		mgrFileNameWithoutExt := strings.TrimSuffix(mgrFileName, mgrFileExt)
+	// 获取最后迁移名称
+	lastMgrName, err := h.svcUp.GetLastMigrationName()
+	if err != nil {
+		return err
+	}
 
-		// 后缀名不一致，则跳过
-		if mgrFileExt != migrate.MGR_FILE_EXT {
-			h.logHelper.Warn("file ext is invalid, skipped", map[string]interface{}{
-				"file":              mgrFileName,
-				"file_ext":          mgrFileExt,
-				"expected_file_ext": migrate.MGR_FILE_EXT,
-			})
-			continue
-		}
+	h.logHelper.Debug("get last migration name", map[string]interface{}{
+		"name": lastMgrName,
+	})
 
-		// 判断是否开始
-		if flags.From != "" {
-			if flags.From != mgrFileNameWithoutExt {
-				h.logHelper.Debug("file did not match --from, skipped", map[string]interface{}{
-					"file": mgrFileName,
-				})
-				continue
+	isStartMigration := false
+	for _, fileName := range mgrFileNames {
+		mgrFilePath := flags.Dir + "/" + fileName
+		mgrName := strings.TrimSuffix(fileName, migrate.MIGRATION_UP_FILE_SUFFIX)
+
+		// 判断是否始执行迁移
+		if !isStartMigration {
+			if lastMgrName != "" {
+				if lastMgrName != mgrName {
+					h.logHelper.Debug("file did not match, skipped", map[string]interface{}{
+						"file":                fileName,
+						"last_migration_name": lastMgrName,
+					})
+					continue
+				} else {
+					isStartMigration = true
+					continue
+				}
 			}
 		}
 
-		h.logHelper.Debug("start parse migration file", map[string]interface{}{
-			"file": mgrFilePath,
-		})
-
-		migration, err := h.parseMigrationFile(mgrFilePath)
+		// 解析迁移文件
+		mgr, err := h.parseMigrationFile(mgrFilePath)
 		if err != nil {
 			return err
 		}
 
-		h.logHelper.Debug("start exec migration file", map[string]interface{}{
-			"file": mgrFilePath,
-		})
-
-		if err := h.execMigration(migration); err != nil {
+		// 执行迁移
+		if err := h.execMigration(mgr); err != nil {
 			return err
 		}
 
-		// 记录迁移历史
-		if err := h.logMigrationHistory(mgrFileNameWithoutExt); err != nil {
+		// 保存迁移历史条目
+		if err := h.svcUp.SaveMigrationHistoryEntry(mgrName); err != nil {
 			return err
 		}
 
-		// 判断是否结束
 		if flags.To != "" {
-			if flags.To == mgrFileNameWithoutExt {
-				h.logHelper.Debug("file match --to, done", map[string]interface{}{
-					"file": mgrFileName,
+			if flags.To == mgrName {
+				h.logHelper.Debug("file match --to, end", map[string]interface{}{
+					"file": fileName,
 				})
 				break
 			}
@@ -125,34 +159,69 @@ func (h *handler) Run(flags *HandlerFlags) error {
 	return nil
 }
 
-func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
+func (h *handler) runMigrateDown(flags *HandlerFlags) error {
+	// 获取最后迁移版本
+	lastMgrName, err := h.svcUp.GetLastMigrationName()
+	if err != nil {
+		return err
+	}
+	h.logHelper.Debug("get last migration name", map[string]interface{}{
+		"name": lastMgrName,
+	})
+	if lastMgrName == "" {
+		return errors.New("last migration name is empty")
+	}
+
+	// 获取最后迁移文件
+	filePath := flags.Dir + "/" + lastMgrName + migrate.MIGRATION_DOWN_FILE_SUFFIX
+
+	migration, err := h.parseMigrationFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	if err := h.execMigration(migration); err != nil {
+		return err
+	}
+
+	if err := h.svcUp.DeleteMigrationHistoryEntry(lastMgrName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	// --dir
-	flagDir, err := cmdFlags.GetString("dir")
-	if err != nil {
+	if dir, err := flags.GetString("dir"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.Dir = dir
 	}
-	handlerFlags.Dir = flagDir
 
-	// --from
-	flagFrom, err := cmdFlags.GetString("from")
-	if err != nil {
+	if from, err := flags.GetString("from"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.From = from
 	}
-	handlerFlags.From = flagFrom
 
-	// --to
-	flagTo, err := cmdFlags.GetString("to")
-	if err != nil {
+	if to, err := flags.GetString("to"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.To = to
 	}
-	handlerFlags.To = flagTo
+
+	if reverse, err := flags.GetBool("reverse"); err != nil {
+		return nil, err
+	} else {
+		handlerFlags.Reverse = reverse
+	}
 
 	return handlerFlags, nil
 }
 
-func (h *handler) listMigrationFileNames(dir string) ([]string, error) {
+func (h *handler) listMigrateUpFileNames(dir string) ([]string, error) {
 	fd, err := os.Open(dir)
 	if err != nil {
 		return nil, err
@@ -166,15 +235,21 @@ func (h *handler) listMigrationFileNames(dir string) ([]string, error) {
 
 	var res []string
 	for _, file := range files {
-		res = append(res, file.Name())
+		fName := file.Name()
+		if strings.HasSuffix(fName, migrate.MIGRATION_UP_FILE_SUFFIX) {
+			res = append(res, fName)
+		}
 	}
 
 	sort.Strings(res)
-
 	return res, nil
 }
 
 func (h *handler) parseMigrationFile(file string) (*migrate.Migration, error) {
+	h.logHelper.Debug("start parse migration file", map[string]interface{}{
+		"file": file,
+	})
+
 	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")
 
@@ -191,7 +266,7 @@ func (h *handler) parseMigrationFile(file string) (*migrate.Migration, error) {
 }
 
 func (h *handler) execMigration(migration *migrate.Migration) error {
-	h.logHelper.Debug("exec migration", map[string]interface{}{
+	h.logHelper.Debug("start exec migration", map[string]interface{}{
 		"migration": migration,
 	})
 
@@ -203,6 +278,10 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Body: []byte(v.Flags["body"].(string)),
 			}
 			if err := h.subHandlers.IndexCreate.Run(flags); err != nil {
+				return err
+			}
+		case "index-delete":
+			if err := h.subHandlers.indexDelete.Run(v.Args); err != nil {
 				return err
 			}
 		case "index-move":
@@ -222,32 +301,17 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 			if err := h.subHandlers.IndexAliasCreate.Run(flags); err != nil {
 				return err
 			}
+		case "index-alias-delete":
+			flags := &indexAliasDelete.HandlerFlags{
+				Index: v.Flags["index"].(string),
+				Alias: v.Flags["alias"].(string),
+			}
+			if err := h.subHandlers.indexAliasDelete.Run(flags); err != nil {
+				return err
+			}
 		default:
 			return errors.Errorf("cmd=%v not supported", v.CMD)
 		}
-	}
-
-	return nil
-}
-
-func (h *handler) getLastMigrationHistory() (interface{}, error) {
-	resp, err := h.esHelper.ListDocs(migrate.MGR_HISTORY_ES_INDEX, []byte(`{"size":1,"sort":[{"id":{"order":"desc"}}]}`))
-	if err != nil {
-		return nil, err
-	}
-
-	if len(resp.Hits.Hits) == 0 {
-		return nil, nil
-	}
-
-	result := resp.Hits.Hits[0]
-
-	return result, err
-}
-
-func (h *handler) logMigrationHistory(name string) error {
-	if err := h.esHelper.SaveDoc(migrate.MGR_HISTORY_ES_INDEX, name, nil); err != nil {
-		return err
 	}
 
 	return nil

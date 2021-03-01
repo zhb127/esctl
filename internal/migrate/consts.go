@@ -1,10 +1,11 @@
 package migrate
 
-var MGR_FILE_EXT = ".yaml"
+var MIGRATION_FILE_EXT = ".yaml"
 
 var (
-	MGR_UP_FILE_EXT   = ".up" + MGR_FILE_EXT
-	MGR_DOWN_FILE_EXT = ".down" + MGR_FILE_EXT
+	MIGRATION_UP_FILE_SUFFIX   = ".up" + MIGRATION_FILE_EXT
+	MIGRATION_DOWN_FILE_SUFFIX = ".down" + MIGRATION_FILE_EXT
 )
 
-var MGR_HISTORY_ES_INDEX = ".esctl_migrate"
+var MIGRATION_HISTORY_ES_INDEX_NAME = ".esctl_migration_history"
+var MIGRATION_HISTORY_ES_INDEX_BODY = []byte(`{"mappings":{"properties":{"name":{"type":"keyword"}}}}`)

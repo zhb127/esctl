@@ -1,0 +1,10 @@
+cmds:
+- cmd: "index-create"
+  flags:
+    name: demo-v1
+    body: |-
+      {"mappings":{"date_detection":false,"properties":{"id":{"type":"long"}}}}
+- cmd: "index-alias"
+  flags:
+    alias: demo
+    index: demo-v1

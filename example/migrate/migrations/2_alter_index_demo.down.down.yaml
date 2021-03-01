@@ -1,0 +1,5 @@
+cmds:
+- cmd: "index-alias-delete"
+  flags:
+    index: demo-v2
+    alias: demo-demo
