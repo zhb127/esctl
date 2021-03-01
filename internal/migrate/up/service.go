@@ -18,7 +18,10 @@ type IService interface {
 	InitMigrationHistoryRepo() error
 	SaveMigrationHistoryEntry(name string) error
 	DeleteMigrationHistoryEntry(name string) error
+
 	GetUpMigrationNameLastExecuted() (string, error)
+	ListUpMigrationFileNames(dir string) ([]string, error)
+	ParseMigrationFile(file string) (*migrate.Migration, error)
 }
 
 type service struct {
@@ -99,8 +102,8 @@ func (s *service) GetUpMigrationNameLastExecuted() (string, error) {
 	return result.Name, nil
 }
 
-// 列出向上迁移文件名（升序）
-func (s *service) listMigrateUpFileNames(dir string) ([]string, error) {
+// 列出向上迁移文件名称
+func (s *service) ListUpMigrationFileNames(dir string) ([]string, error) {
 	fd, err := os.Open(dir)
 	if err != nil {
 		return nil, err
@@ -125,7 +128,8 @@ func (s *service) listMigrateUpFileNames(dir string) ([]string, error) {
 	return res, nil
 }
 
-func (s *service) parseMigrationFile(file string) (*migrate.Migration, error) {
+// 解析迁移文件
+func (s *service) ParseMigrationFile(file string) (*migrate.Migration, error) {
 	viper.SetConfigFile(file)
 	viper.SetConfigType("yaml")
 

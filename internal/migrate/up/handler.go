@@ -5,13 +5,10 @@ import (
 	"esctl/internal/migrate"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
-	"os"
-	"sort"
 	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 
 	indexAliasCreate "esctl/internal/index/alias/create"
 	indexAliasDelete "esctl/internal/index/alias/delete"
@@ -85,18 +82,17 @@ func (h *handler) Run(flags *HandlerFlags) error {
 }
 
 func (h *handler) runMigrateUp(flags *HandlerFlags) error {
-	// 列出迁移文件名称
-	mgrFileNames, err := h.listMigrateUpFileNames(flags.Dir)
+	upMgrFileNames, err := h.svcUp.ListUpMigrationFileNames(flags.Dir)
 	if err != nil {
 		return err
 	}
 
-	if len(mgrFileNames) == 0 {
-		return errors.Errorf("there is no migration files")
+	upMgrFileNamesCount := len(upMgrFileNames)
+	if upMgrFileNamesCount == 0 {
+		return errors.Errorf("there is no up migration files")
 	}
-
-	h.logHelper.Debug("list migration files", map[string]interface{}{
-		"count": len(mgrFileNames),
+	h.logHelper.Debug("list up migration files", map[string]interface{}{
+		"count": upMgrFileNamesCount,
 	})
 
 	// 获取最后执行的迁移名称
@@ -110,11 +106,11 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 	})
 
 	isStartMigration := false
-	for _, fileName := range mgrFileNames {
+	for _, fileName := range upMgrFileNames {
 		mgrFilePath := flags.Dir + "/" + fileName
 		mgrName := strings.TrimSuffix(fileName, migrate.UP_MIGRATION_FILE_SUFFIX)
 
-		// 判断是否始执行迁移
+		// 判断是否开始迁移
 		if !isStartMigration {
 			if mgrNameLastExecuted != "" {
 				if mgrNameLastExecuted != mgrName {
@@ -131,7 +127,7 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 		}
 
 		// 解析迁移文件
-		mgr, err := h.parseMigrationFile(mgrFilePath)
+		mgr, err := h.svcUp.ParseMigrationFile(mgrFilePath)
 		if err != nil {
 			return err
 		}
@@ -160,31 +156,29 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 }
 
 func (h *handler) runMigrateDown(flags *HandlerFlags) error {
-	// 获取最后迁移版本
-	lastMgrName, err := h.svcUp.GetUpMigrationNameLastExecuted()
+	mgrNameLastExecuted, err := h.svcUp.GetUpMigrationNameLastExecuted()
 	if err != nil {
 		return err
 	}
-	h.logHelper.Debug("get last migration name", map[string]interface{}{
-		"name": lastMgrName,
+	h.logHelper.Debug("get migration name last executed", map[string]interface{}{
+		"name": mgrNameLastExecuted,
 	})
-	if lastMgrName == "" {
-		return errors.New("last migration name is empty")
+	if mgrNameLastExecuted == "" {
+		return errors.New("migration name last executed is empty")
 	}
 
-	// 获取最后迁移文件
-	filePath := flags.Dir + "/" + lastMgrName + migrate.DOWN_MIGRATION_FILE_SUFFIX
+	downMgrFilePath := flags.Dir + "/" + mgrNameLastExecuted + migrate.DOWN_MIGRATION_FILE_SUFFIX
 
-	migration, err := h.parseMigrationFile(filePath)
+	mgr, err := h.svcUp.ParseMigrationFile(downMgrFilePath)
 	if err != nil {
 		return err
 	}
 
-	if err := h.execMigration(migration); err != nil {
+	if err := h.execMigration(mgr); err != nil {
 		return err
 	}
 
-	if err := h.svcUp.DeleteMigrationHistoryEntry(lastMgrName); err != nil {
+	if err := h.svcUp.DeleteMigrationHistoryEntry(mgrNameLastExecuted); err != nil {
 		return err
 	}
 
@@ -221,55 +215,7 @@ func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	return handlerFlags, nil
 }
 
-func (h *handler) listMigrateUpFileNames(dir string) ([]string, error) {
-	fd, err := os.Open(dir)
-	if err != nil {
-		return nil, err
-	}
-	defer fd.Close()
-
-	files, err := fd.Readdir(-1)
-	if err != nil {
-		return nil, err
-	}
-
-	var res []string
-	for _, file := range files {
-		fName := file.Name()
-		if strings.HasSuffix(fName, migrate.UP_MIGRATION_FILE_SUFFIX) {
-			res = append(res, fName)
-		}
-	}
-
-	sort.Strings(res)
-	return res, nil
-}
-
-func (h *handler) parseMigrationFile(file string) (*migrate.Migration, error) {
-	h.logHelper.Debug("start parse migration file", map[string]interface{}{
-		"file": file,
-	})
-
-	viper.SetConfigFile(file)
-	viper.SetConfigType("yaml")
-
-	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "read migration file")
-	}
-
-	res := &migrate.Migration{}
-	if err := viper.Unmarshal(res); err != nil {
-		return nil, errors.Wrap(err, "parse migration file content")
-	}
-
-	return res, nil
-}
-
 func (h *handler) execMigration(migration *migrate.Migration) error {
-	h.logHelper.Debug("start exec migration", map[string]interface{}{
-		"migration": migration,
-	})
-
 	for _, v := range migration.CMDs {
 		switch v.CMD {
 		case "index-create":

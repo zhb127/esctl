@@ -26,15 +26,15 @@ var CreateCmd = &cobra.Command{
 }
 
 func init() {
-	flags := CreateCmd.Flags()
-	flags.StringP("dir", "d", "", "The migrations dir")
-	flags.StringP("name", "n", "", "The migration name")
+	createCmdFlags := CreateCmd.Flags()
+	createCmdFlags.StringP("dir", "d", "", "The migrations dir")
+	createCmdFlags.StringP("name", "n", "", "The migration name")
 
-	if err := cobra.MarkFlagRequired(flags, "dir"); err != nil {
+	if err := cobra.MarkFlagRequired(createCmdFlags, "dir"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 
-	if err := cobra.MarkFlagRequired(flags, "name"); err != nil {
+	if err := cobra.MarkFlagRequired(createCmdFlags, "name"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)
 	}
 }
