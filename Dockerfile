@@ -13,7 +13,8 @@ RUN mkdir -p /build
 WORKDIR /build
 
 COPY . .
-ENV GO111MODULE="auto"
+ENV GOPROXY=https://goproxy.cn,direct \
+    GO111MODULE="auto"
 
 RUN go mod download
 
