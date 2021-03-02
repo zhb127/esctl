@@ -36,4 +36,6 @@ RUN  set -ex \
 
 ENV TZ=Asia/Shanghai
 
-COPY --from=builder /build/* /usr/local/bin/
+COPY --from=builder /build/esctl /usr/local/bin/
+
+ENTRYPOINT [ "esctl" ]
