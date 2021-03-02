@@ -150,28 +150,22 @@ current-context: localhost
 }
 
 func mergeFlagsToConfig(pFlags *flag.FlagSet, cfg *config) error {
-	flagCluster, err := pFlags.GetString("cluster")
-	if err != nil {
+	if cluster, err := pFlags.GetString("cluster"); err != nil {
 		return err
-	}
-	if flagCluster != "" {
-		cfg.CurrentClusterName = flagCluster
+	} else if cluster != "" {
+		cfg.CurrentClusterName = cluster
 	}
 
-	flagUser, err := pFlags.GetString("user")
-	if err != nil {
+	if user, err := pFlags.GetString("user"); err != nil {
 		return err
-	}
-	if flagUser != "" {
-		cfg.CurrentUserName = flagUser
+	} else if user != "" {
+		cfg.CurrentUserName = user
 	}
 
-	flagContext, err := pFlags.GetString("context")
-	if err != nil {
+	if context, err := pFlags.GetString("context"); err != nil {
 		return err
-	}
-	if flagContext != "" {
-		cfg.CurrentContextName = flagContext
+	} else if context != "" {
+		cfg.CurrentContextName = context
 	}
 
 	return nil

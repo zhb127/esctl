@@ -10,26 +10,30 @@ import (
 
 var MoveCmd = &cobra.Command{
 	Use:   "move",
-	Short: "Move src index to dest index",
-	Long:  `Move src index to dest index`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Short: "Move source index to destination index",
+	Long:  `Move source index to destination index`,
+	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := move.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to parse cmd flags", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 		if err := handler.Run(handlerFlags); err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 	},
 }
 
 func init() {
 	flags := MoveCmd.Flags()
-	flags.StringP("src", "s", "", "The src index name")
-	flags.StringP("dest", "d", "", "The dest index name")
-	flags.BoolP("purge", "p", false, "Delete src index after migrate success")
+	flags.StringP("src", "s", "", "The source index name")
+	flags.StringP("dest", "d", "", "The destination index name")
+	flags.BoolP("purge", "p", false, "Delete source index after successful operation")
 
 	if err := cobra.MarkFlagRequired(flags, "src"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)

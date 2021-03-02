@@ -5,7 +5,6 @@ import (
 	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -35,54 +34,53 @@ type HandlerFlags struct {
 }
 
 func (h *handler) Run(flags *HandlerFlags) error {
-	indexName := flags.Name
-	indexBody := flags.Body
-	resp, err := h.esHelper.CreateIndex(indexName, indexBody)
+	resp, err := h.esHelper.CreateIndex(flags.Name, flags.Body)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%v", resp)
+	h.logHelper.Info("success", map[string]interface{}{
+		"result": resp,
+	})
+
 	return nil
 }
 
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	// 处理 --name
-	flagName, err := cmdFlags.GetString("name")
-	if err != nil {
+	if name, err := cmdFlags.GetString("name"); err != nil {
 		return nil, err
-	}
-	handlerFlags.Name = flagName
-
-	// 处理 --body
-	flagBody, err := cmdFlags.GetString("body")
-	if err != nil {
-		return nil, err
-	}
-	if flagBody != "" {
-		handlerFlags.Body = []byte(flagBody)
+	} else {
+		handlerFlags.Name = name
 	}
 
-	// 处理 --file
-	if flagBody == "" {
-		flagFile, err := cmdFlags.GetString("file")
+	if body, err := cmdFlags.GetString("body"); err != nil {
+		return nil, err
+	} else {
+		if body != "" {
+			handlerFlags.Body = []byte(body)
+		}
+	}
+
+	if handlerFlags.Body == nil {
+		file, err := cmdFlags.GetString("file")
 		if err != nil {
 			return nil, err
 		}
-		if flagFile == "" {
+
+		if file == "" {
 			return nil, errors.New("oneof --body, --file is required")
 		}
 
-		bodyFile, err := os.Open(flagFile)
+		fd, err := os.Open(file)
 		if err != nil {
 			return nil, err
 		}
-		defer bodyFile.Close()
+		defer fd.Close()
 
-		bodyBytes, _ := ioutil.ReadAll(bodyFile)
-		handlerFlags.Body = bodyBytes
+		byteArr, _ := ioutil.ReadAll(fd)
+		handlerFlags.Body = byteArr
 	}
 
 	return handlerFlags, nil

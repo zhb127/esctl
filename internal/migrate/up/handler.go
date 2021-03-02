@@ -23,14 +23,15 @@ type IHandler interface {
 }
 
 type handler struct {
-	logHelper   log.IHelper
-	esHelper    es.IHelper
-	subHandlers *handlerSubHandlers
+	logHelper log.IHelper
+	esHelper  es.IHelper
+
+	cmds *handlerCMDs
 
 	svcUp IService
 }
 
-type handlerSubHandlers struct {
+type handlerCMDs struct {
 	IndexCreate      indexCreate.IHandler
 	indexDelete      indexDelete.IHandler
 	IndexMove        indexMove.IHandler
@@ -42,7 +43,7 @@ func NewHandler(a app.IApp) IHandler {
 	h := &handler{
 		logHelper: a.LogHelper(),
 		esHelper:  a.ESHelper(),
-		subHandlers: &handlerSubHandlers{
+		cmds: &handlerCMDs{
 			IndexCreate:      indexCreate.NewHandler(a),
 			indexDelete:      indexDelete.NewHandler(a),
 			IndexMove:        indexMove.NewHandler(a),
@@ -71,17 +72,17 @@ func (h *handler) Run(flags *HandlerFlags) error {
 	}
 
 	if flags.Reverse {
-		return h.runMigrateDown(flags)
+		return h.migrateDown(flags)
 	}
 
-	if err := h.runMigrateUp(flags); err != nil {
+	if err := h.migrateUp(flags); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (h *handler) runMigrateUp(flags *HandlerFlags) error {
+func (h *handler) migrateUp(flags *HandlerFlags) error {
 	upMgrFileNames, err := h.svcUp.ListUpMigrationFileNames(flags.Dir)
 	if err != nil {
 		return err
@@ -155,7 +156,7 @@ func (h *handler) runMigrateUp(flags *HandlerFlags) error {
 	return nil
 }
 
-func (h *handler) runMigrateDown(flags *HandlerFlags) error {
+func (h *handler) migrateDown(flags *HandlerFlags) error {
 	mgrNameLastExecuted, err := h.svcUp.GetUpMigrationNameLastExecuted()
 	if err != nil {
 		return err
@@ -223,11 +224,11 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Name: v.Flags["name"].(string),
 				Body: []byte(v.Flags["body"].(string)),
 			}
-			if err := h.subHandlers.IndexCreate.Run(flags); err != nil {
+			if err := h.cmds.IndexCreate.Run(flags); err != nil {
 				return err
 			}
 		case "index-delete":
-			if err := h.subHandlers.indexDelete.Run(v.Args); err != nil {
+			if err := h.cmds.indexDelete.Run(v.Args); err != nil {
 				return err
 			}
 		case "index-move":
@@ -236,7 +237,7 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Dest:  v.Flags["dest"].(string),
 				Purge: v.Flags["purge"].(bool),
 			}
-			if err := h.subHandlers.IndexMove.Run(flags); err != nil {
+			if err := h.cmds.IndexMove.Run(flags); err != nil {
 				return err
 			}
 		case "index-alias-create":
@@ -244,7 +245,7 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Index: v.Flags["index"].(string),
 				Alias: v.Flags["alias"].(string),
 			}
-			if err := h.subHandlers.IndexAliasCreate.Run(flags); err != nil {
+			if err := h.cmds.IndexAliasCreate.Run(flags); err != nil {
 				return err
 			}
 		case "index-alias-delete":
@@ -252,11 +253,11 @@ func (h *handler) execMigration(migration *migrate.Migration) error {
 				Index: v.Flags["index"].(string),
 				Alias: v.Flags["alias"].(string),
 			}
-			if err := h.subHandlers.indexAliasDelete.Run(flags); err != nil {
+			if err := h.cmds.indexAliasDelete.Run(flags); err != nil {
 				return err
 			}
 		default:
-			return errors.Errorf("cmd=%v not supported", v.CMD)
+			return errors.Errorf("cmd=%s not supported", v.CMD)
 		}
 	}
 

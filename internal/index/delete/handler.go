@@ -4,7 +4,6 @@ import (
 	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
-	"fmt"
 )
 
 type IHandler interface {
@@ -24,10 +23,10 @@ func NewHandler(a app.IApp) IHandler {
 }
 
 func (h *handler) Run(indexNames []string) error {
-	if _, err := h.esHelper.DeleteIndices(indexNames...); err != nil {
+	_, err := h.esHelper.DeleteIndices(indexNames...)
+	if err != nil {
 		return err
 	}
 
-	fmt.Println("success")
 	return nil
 }

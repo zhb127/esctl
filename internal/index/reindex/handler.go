@@ -11,7 +11,7 @@ import (
 )
 
 type IHandler interface {
-	Handle(flags *HandlerFlags) error
+	Run(flags *HandlerFlags) error
 	ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error)
 }
 
@@ -32,7 +32,7 @@ type HandlerFlags struct {
 	DestIndexName string
 }
 
-func (h *handler) Handle(flags *HandlerFlags) error {
+func (h *handler) Run(flags *HandlerFlags) error {
 	resp, err := h.esHelper.Reindex(flags.SrcIndexName, flags.DestIndexName)
 	if err != nil {
 		return err
@@ -47,17 +47,17 @@ func (h *handler) Handle(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	flagSrcIndexName, err := cmdFlags.GetString("src")
-	if err != nil {
+	if src, err := cmdFlags.GetString("src"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.SrcIndexName = src
 	}
-	handlerFlags.SrcIndexName = flagSrcIndexName
 
-	flagDestIndexName, err := cmdFlags.GetString("dest")
-	if err != nil {
+	if dest, err := cmdFlags.GetString("dest"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.DestIndexName = dest
 	}
-	handlerFlags.DestIndexName = flagDestIndexName
 
 	return handlerFlags, nil
 }

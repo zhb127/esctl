@@ -8,8 +8,8 @@ import (
 
 var AliasCmd = &cobra.Command{
 	Use:   "alias",
-	Short: "Manage ES index alias",
-	Long:  `Manage ES index alias`,
+	Short: "Manage index aliases",
+	Long:  `Manage index aliases`,
 }
 
 func init() {

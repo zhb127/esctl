@@ -10,21 +10,23 @@ import (
 )
 
 var DeleteCmd = &cobra.Command{
-	Use:   "delete NAME_1 ... NAME_N",
+	Use:   "delete INDEX_NAME_1 ... INDEX_NAME_N",
 	Short: "Delete the specified indices",
 	Long:  `Delete the specified indices`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		if len(args) == 0 {
-			if err := cmd.Help(); err != nil {
-				infra.LogHelper.Fatal(err.Error(), nil)
-			}
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": "Need to specify at least one index name",
+			})
 			os.Exit(1)
 		}
 
 		app := app.New()
 		handler := delete.NewHandler(app)
 		if err := handler.Run(args); err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 	},
 }

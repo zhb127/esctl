@@ -12,15 +12,19 @@ var ReindexCmd = &cobra.Command{
 	Use:   "reindex",
 	Short: "Reindex source index to dest index",
 	Long:  `Reindex source index to dest index`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		app := app.New()
 		handler := reindex.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to parse cmd flags", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
-		if err := handler.Handle(handlerFlags); err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+		if err := handler.Run(handlerFlags); err != nil {
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 	},
 }

@@ -40,7 +40,8 @@ func (h *handler) Run(flags *HandlerFlags, indexNameWildcardExps []string) error
 		return err
 	}
 
-	if flags.All == false {
+	// 剔除隐藏索引
+	if !flags.All {
 		respNew := &es.ListIndicesResp{}
 		for _, item := range resp.Items {
 			if !strings.HasPrefix(item.Name, ".") {
@@ -60,25 +61,25 @@ func (h *handler) Run(flags *HandlerFlags, indexNameWildcardExps []string) error
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	flagFormat, err := cmdFlags.GetString("format")
-	if err != nil {
+	if format, err := cmdFlags.GetString("format"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.Format = format
 	}
-	handlerFlags.Format = flagFormat
 
-	flagAll, err := cmdFlags.GetBool("all")
-	if err != nil {
+	if all, err := cmdFlags.GetBool("all"); err != nil {
 		return nil, err
+	} else {
+		handlerFlags.All = all
 	}
-	handlerFlags.All = flagAll
 
 	return handlerFlags, nil
 }
 
 func (*handler) printf(format string, resp *es.ListIndicesResp) error {
-	// 按指定格式打印
+	// 按自定义格式打印
 	if format != "" {
-		t := template.Must(template.New("specifiedFormat").Parse(format + "\n"))
+		t := template.Must(template.New("custom").Parse(format + "\n"))
 		for _, item := range resp.Items {
 			if err := t.Execute(os.Stdout, item); err != nil {
 				return err

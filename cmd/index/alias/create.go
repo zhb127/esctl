@@ -17,10 +17,14 @@ var CreateCmd = &cobra.Command{
 		handler := create.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to parse cmd flags", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 		if err := handler.Run(handlerFlags); err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 	},
 }

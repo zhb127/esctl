@@ -17,16 +17,20 @@ var ListCmd = &cobra.Command{
 		handler := list.NewHandler(app)
 		handlerFlags, err := handler.ParseCmdFlags(cmd.Flags())
 		if err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to parse cmd flags", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 		if err := handler.Run(handlerFlags, args); err != nil {
-			infra.LogHelper.Fatal(err.Error(), nil)
+			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
+				"error": err.Error(),
+			})
 		}
 	},
 }
 
 func init() {
 	flags := ListCmd.Flags()
-	flags.String("format", "", "Pretty-print indices using a Go template")
-	flags.BoolP("all", "a", false, "List including hidden indices")
+	flags.String("format", "", "Pretty-print result using a Go template")
+	flags.BoolP("all", "a", false, "List including hidden items")
 }
