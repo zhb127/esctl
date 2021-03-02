@@ -29,9 +29,9 @@ var UpCmd = &cobra.Command{
 func init() {
 	upCmdflags := UpCmd.Flags()
 	upCmdflags.StringP("dir", "d", "", "The migrations dir")
-	upCmdflags.StringP("from", "", "", "File name(without ext) to start migration")
-	upCmdflags.StringP("to", "", "", "File name(without ext) to end migration")
-	upCmdflags.BoolP("reverse", "r", false, "Run migrate down")
+	upCmdflags.StringP("from", "", "", "The migration name to start")
+	upCmdflags.StringP("to", "", "", "The migration name to end")
+	upCmdflags.BoolP("reverse", "r", false, "Run migrate down (step by step)")
 
 	if err := cobra.MarkFlagRequired(upCmdflags, "dir"); err != nil {
 		infra.LogHelper.Fatal(err.Error(), nil)
