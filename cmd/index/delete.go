@@ -4,7 +4,6 @@ import (
 	"esctl/cmd/infra"
 	"esctl/internal/app"
 	"esctl/internal/index/delete"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -18,7 +17,6 @@ var DeleteCmd = &cobra.Command{
 			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
 				"error": "Need to specify at least one index name",
 			})
-			os.Exit(1)
 		}
 
 		app := app.New()
@@ -27,6 +25,8 @@ var DeleteCmd = &cobra.Command{
 			infra.LogHelper.Fatal("failed to run handler", map[string]interface{}{
 				"error": err.Error(),
 			})
+		} else {
+			infra.LogHelper.Info("ok", nil)
 		}
 	},
 }
