@@ -38,17 +38,27 @@ func Execute() {
 }
 
 func init() {
-	var cfgFile string
-
 	// 全局 flasgs，对所有子命令有效
 	pFlags := rootCmd.PersistentFlags()
-	pFlags.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.esctl/config)")
-	pFlags.StringP("context", "", "", "The name of the config context to use")
-	pFlags.StringP("cluster", "", "", "The name of the config cluster to use")
-	pFlags.StringP("user", "", "", "The name of the config user to use")
+	pFlags.StringP("config", "c", "", "config file (default is $HOME/.esctl/config)")
+	pFlags.String("context", "", "The name of the config context to use")
+	pFlags.String("cluster", "", "The name of the config cluster to use")
+	pFlags.String("user", "", "The name of the config user to use")
 
 	flags := rootCmd.Flags()
 	flags.BoolP("toggle", "t", false, "Help message for toggle")
+
+	cobra.OnInitialize(onInitialize)
+}
+
+func onInitialize() {
+	pFlags := rootCmd.PersistentFlags()
+
+	cfgFile, err := pFlags.GetString("config")
+	if err != nil {
+		fmt.Println("failed to get --config: " + err.Error())
+		os.Exit(1)
+	}
 
 	// 初始化配置
 	cfg, err := initConfig(cfgFile, pFlags)
@@ -56,7 +66,6 @@ func init() {
 		fmt.Println("failed to load config: " + err.Error())
 		os.Exit(1)
 	}
-
 	// 初始化日志
 	if err := infra.InitLogHelper(log.HelperConfig{
 		LogLevel:  cfg.Log.Level,
