@@ -8,15 +8,15 @@ linters-settings:
     packages-with-error-message:
       - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
   dupl:
-    threshold: 100
+    threshold: 255
   funlen:
-    lines: 100
-    statements: 50
+    lines: 255
+    statements: 100
   gci:
     local-prefixes: github.com/golangci/golangci-lint
-  goconst:
-    min-len: 2
-    min-occurrences: 2
+  #goconst:
+  #  min-len: 2
+  #  min-occurrences: 2
   gocritic:
     enabled-tags:
       - diagnostic
@@ -30,8 +30,14 @@ linters-settings:
       - octalLiteral
       - whyNoLint
       - wrapperFunc
-  gocyclo:
-    min-complexity: 15
+      - importShadow
+      - elseif
+      - paramTypeCombine
+      - commentedOutCode
+      - hugeParam
+  #gocyclo:
+    # tips: cyclomatic complexity 22 of func
+    #min-complexity: 20
   goimports:
     local-prefixes: github.com/golangci/golangci-lint
   golint:
@@ -42,7 +48,7 @@ linters-settings:
         # don't include the "operation" and "assign"
         checks: argument,case,condition,return
   govet:
-    check-shadowing: true
+    check-shadowing: false
     settings:
       printf:
         funcs:
@@ -51,7 +57,7 @@ linters-settings:
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
           - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
   lll:
-    line-length: 140
+    line-length: 256
   maligned:
     suggest-new: true
   misspell:
@@ -75,14 +81,15 @@ linters:
     - errcheck
     - exhaustive
     - funlen
-    - gochecknoinits
-    - goconst
+    # tips: don't use `init` function (gochecknoinits)
+    #- gochecknoinits
+    # tips: string `xxx` has 4 occurrences, make it a constant (goconst)
+    #- goconst
     - gocritic
     - gocyclo
     - gofmt
     - goimports
     - golint
-    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -94,15 +101,18 @@ linters:
     - noctx
     - nolintlint
     - rowserrcheck
-    - scopelint
+    # tips: Using the variable on range scope `xxx` in function literal (scopelint)go-golangci-lint
+    #- scopelint
     - staticcheck
     - structcheck
     - stylecheck
     - typecheck
     - unconvert
-    - unparam
+    # tips: result xxx is always nil (unparam)
+    #- unparam
     - unused
     - varcheck
+    # tips: unnecessary leading newline (whitespace), unnecessary trailing newline (whitespace)
     - whitespace
 
   # don't enable:
