@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/elastic/go-elasticsearch/v7 v7.10.0
+	github.com/google/wire v0.5.0
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
 	github.com/joho/godotenv v1.3.0
 	github.com/mcuadros/go-defaults v1.2.0
