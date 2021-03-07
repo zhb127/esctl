@@ -48,11 +48,11 @@ func (h *handler) Run(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	if format, err := cmdFlags.GetString("format"); err != nil {
+	format, err := cmdFlags.GetString("format")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Format = format
 	}
+	handlerFlags.Format = format
 
 	return handlerFlags, nil
 }

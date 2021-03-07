@@ -189,29 +189,29 @@ func (h *handler) migrateDown(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	if dir, err := flags.GetString("dir"); err != nil {
+	dir, err := flags.GetString("dir")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Dir = dir
 	}
+	handlerFlags.Dir = dir
 
-	if from, err := flags.GetString("from"); err != nil {
+	from, err := flags.GetString("from")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.From = from
 	}
+	handlerFlags.From = from
 
-	if to, err := flags.GetString("to"); err != nil {
+	to, err := flags.GetString("to")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.To = to
 	}
+	handlerFlags.To = to
 
-	if reverse, err := flags.GetBool("reverse"); err != nil {
+	reverse, err := flags.GetBool("reverse")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Reverse = reverse
 	}
+	handlerFlags.Reverse = reverse
 
 	return handlerFlags, nil
 }

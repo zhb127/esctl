@@ -47,17 +47,17 @@ func (h *handler) Run(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	if src, err := cmdFlags.GetString("src"); err != nil {
+	src, err := cmdFlags.GetString("src")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.SrcIndexName = src
 	}
+	handlerFlags.SrcIndexName = src
 
-	if dest, err := cmdFlags.GetString("dest"); err != nil {
+	dest, err := cmdFlags.GetString("dest")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.DestIndexName = dest
 	}
+	handlerFlags.DestIndexName = dest
 
 	return handlerFlags, nil
 }
