@@ -34,7 +34,7 @@ func FromInt64(v int64) string {
 
 func FromIOReadCloser(v io.ReadCloser) string {
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(v)
+	_, _ = buf.ReadFrom(v)
 	res := buf.String()
 	return res
 }
