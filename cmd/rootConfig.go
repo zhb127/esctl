@@ -189,7 +189,8 @@ func validateConfig(cfg *config) error {
 		return errors.New("config.users is empty")
 	}
 
-	for _, v := range cfg.Contexts {
+	for k := range cfg.Contexts {
+		v := cfg.Contexts[k]
 		if v.Name == cfg.CurrentContextName {
 			cfg.CurrentContextItem = &v
 			if cfg.CurrentClusterName == "" {
@@ -205,7 +206,8 @@ func validateConfig(cfg *config) error {
 		return errors.New("config.contexts not contains config.current-context")
 	}
 
-	for _, v := range cfg.Clusters {
+	for k := range cfg.Clusters {
+		v := cfg.Clusters[k]
 		if v.Name == cfg.CurrentClusterName {
 			cfg.CurrentClusterItem = &v
 			break
@@ -215,7 +217,8 @@ func validateConfig(cfg *config) error {
 		return errors.New("config.clusters not contains config.current-cluster")
 	}
 
-	for _, v := range cfg.Users {
+	for k := range cfg.Users {
+		v := cfg.Users[k]
 		if v.Name == cfg.CurrentUserName {
 			cfg.CurrentUserItem = &v
 			break
