@@ -109,7 +109,7 @@ func (h *handler) migrateUp(flags *HandlerFlags) error {
 	isStartMigration := false
 	for _, fileName := range upMgrFileNames {
 		mgrFilePath := flags.Dir + "/" + fileName
-		mgrName := strings.TrimSuffix(fileName, migrate.UP_MIGRATION_FILE_SUFFIX)
+		mgrName := strings.TrimSuffix(fileName, migrate.UpMigrationFileSuffix)
 
 		// 判断是否开始迁移
 		if !isStartMigration {
@@ -168,7 +168,7 @@ func (h *handler) migrateDown(flags *HandlerFlags) error {
 		return errors.New("migration name last executed is empty")
 	}
 
-	downMgrFilePath := flags.Dir + "/" + mgrNameLastExecuted + migrate.DOWN_MIGRATION_FILE_SUFFIX
+	downMgrFilePath := flags.Dir + "/" + mgrNameLastExecuted + migrate.DownMigrationFileSuffix
 
 	mgr, err := h.svcUp.ParseMigrationFile(downMgrFilePath)
 	if err != nil {
