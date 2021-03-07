@@ -2,39 +2,39 @@ package log
 
 // 日志级别越小（从小到大：all -> disabled），输出的日志越多、越细
 const (
-	LOG_LEVEL_ALL_NUM = uint8(iota)
-	LOG_LEVEL_DEBUG_NUM
-	LOG_LEVEL_INFO_NUM
-	LOG_LEVEL_WARN_NUM
-	LOG_LEVEL_ERROR_NUM
-	LOG_LEVEL_FATAL_NUM
-	LOG_LEVEL_PANIC_NUM
-	LOG_LEVEL_NONE_NUM
+	LogLevelAllNum = iota + 1
+	LogLevelDebugNum
+	LogLevelInfoNum
+	LogLevelWarnNum
+	LogLevelErrorNum
+	LogLevelFatalNum
+	LogLevelPanicNum
+	LogLevelNoneNum
 )
 
 const (
-	LOG_LEVEL_ALL   = "all"
-	LOG_LEVEL_DEBUG = "debug"
-	LOG_LEVEL_INFO  = "info"
-	LOG_LEVEL_WARN  = "warn"
-	LOG_LEVEL_ERROR = "error"
-	LOG_LEVEL_FATAL = "fatal"
-	LOG_LEVEL_PANIC = "panic"
-	LOG_LEVEL_NONE  = "none"
+	LogLevelAll   = "all"
+	LogLevelDebug = "debug"
+	LogLevelInfo  = "info"
+	LogLevelWarn  = "warn"
+	LogLevelError = "error"
+	LogLevelFatal = "fatal"
+	LogLevelPanic = "panic"
+	LogLevelNone  = "none"
 )
 
 var LogLevelMapToNum = map[string]uint8{
-	LOG_LEVEL_ALL:   LOG_LEVEL_ALL_NUM,
-	LOG_LEVEL_DEBUG: LOG_LEVEL_DEBUG_NUM,
-	LOG_LEVEL_INFO:  LOG_LEVEL_INFO_NUM,
-	LOG_LEVEL_WARN:  LOG_LEVEL_WARN_NUM,
-	LOG_LEVEL_ERROR: LOG_LEVEL_ERROR_NUM,
-	LOG_LEVEL_FATAL: LOG_LEVEL_FATAL_NUM,
-	LOG_LEVEL_PANIC: LOG_LEVEL_PANIC_NUM,
-	LOG_LEVEL_NONE:  LOG_LEVEL_NONE_NUM,
+	LogLevelAll:   LogLevelAllNum,
+	LogLevelDebug: LogLevelDebugNum,
+	LogLevelInfo:  LogLevelInfoNum,
+	LogLevelWarn:  LogLevelWarnNum,
+	LogLevelError: LogLevelErrorNum,
+	LogLevelFatal: LogLevelFatalNum,
+	LogLevelPanic: LogLevelPanicNum,
+	LogLevelNone:  LogLevelNoneNum,
 }
 
 const (
-	LOG_FORMAT_JSON   = "json"
-	LOG_FORMAT_PRETTY = "pretty"
+	LogFormatJSON   = "json"
+	LogFormatPretty = "pretty"
 )
