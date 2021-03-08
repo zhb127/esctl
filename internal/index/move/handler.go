@@ -108,23 +108,23 @@ func (h *handler) Run(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) {
 	result := &HandlerFlags{}
 
-	if src, err := cmdFlags.GetString("src"); err != nil {
+	src, err := cmdFlags.GetString("src")
+	if err != nil {
 		return nil, err
-	} else {
-		result.Src = src
 	}
+	result.Src = src
 
-	if dest, err := cmdFlags.GetString("dest"); err != nil {
+	dest, err := cmdFlags.GetString("dest")
+	if err != nil {
 		return nil, err
-	} else {
-		result.Dest = dest
 	}
+	result.Dest = dest
 
-	if purge, err := cmdFlags.GetBool("purge"); err != nil {
+	purge, err := cmdFlags.GetBool("purge")
+	if err != nil {
 		return nil, err
-	} else {
-		result.Purge = purge
 	}
+	result.Purge = purge
 
 	return result, nil
 }

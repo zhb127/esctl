@@ -109,7 +109,7 @@ func (h *handler) migrateUp(flags *HandlerFlags) error {
 	isStartMigration := false
 	for _, fileName := range upMgrFileNames {
 		mgrFilePath := flags.Dir + "/" + fileName
-		mgrName := strings.TrimSuffix(fileName, migrate.UP_MIGRATION_FILE_SUFFIX)
+		mgrName := strings.TrimSuffix(fileName, migrate.UpMigrationFileSuffix)
 
 		// 判断是否开始迁移
 		if !isStartMigration {
@@ -168,7 +168,7 @@ func (h *handler) migrateDown(flags *HandlerFlags) error {
 		return errors.New("migration name last executed is empty")
 	}
 
-	downMgrFilePath := flags.Dir + "/" + mgrNameLastExecuted + migrate.DOWN_MIGRATION_FILE_SUFFIX
+	downMgrFilePath := flags.Dir + "/" + mgrNameLastExecuted + migrate.DownMigrationFileSuffix
 
 	mgr, err := h.svcUp.ParseMigrationFile(downMgrFilePath)
 	if err != nil {
@@ -189,29 +189,29 @@ func (h *handler) migrateDown(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	if dir, err := flags.GetString("dir"); err != nil {
+	dir, err := flags.GetString("dir")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Dir = dir
 	}
+	handlerFlags.Dir = dir
 
-	if from, err := flags.GetString("from"); err != nil {
+	from, err := flags.GetString("from")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.From = from
 	}
+	handlerFlags.From = from
 
-	if to, err := flags.GetString("to"); err != nil {
+	to, err := flags.GetString("to")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.To = to
 	}
+	handlerFlags.To = to
 
-	if reverse, err := flags.GetBool("reverse"); err != nil {
+	reverse, err := flags.GetBool("reverse")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Reverse = reverse
 	}
+	handlerFlags.Reverse = reverse
 
 	return handlerFlags, nil
 }

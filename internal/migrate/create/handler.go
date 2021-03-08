@@ -34,8 +34,8 @@ type HandlerFlags struct {
 func (h *handler) Run(flags *HandlerFlags) error {
 	// 生成迁移文件路径
 	mgrNo := time.Now().Format("20060102150405")
-	mgrDownFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.DOWN_MIGRATION_FILE_SUFFIX
-	mgrUpFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.UP_MIGRATION_FILE_SUFFIX
+	mgrDownFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.DownMigrationFileSuffix
+	mgrUpFilePath := flags.Dir + "/" + mgrNo + "_" + flags.Name + migrate.UpMigrationFileSuffix
 
 	// 创建向上迁移文件
 	mgrUpFile, err := os.Create(mgrUpFilePath)
@@ -59,17 +59,17 @@ func (h *handler) Run(flags *HandlerFlags) error {
 func (h *handler) ParseCmdFlags(flags *pflag.FlagSet) (*HandlerFlags, error) {
 	handlerFlags := &HandlerFlags{}
 
-	if dir, err := flags.GetString("dir"); err != nil {
+	dir, err := flags.GetString("dir")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Dir = dir
 	}
+	handlerFlags.Dir = dir
 
-	if name, err := flags.GetString("name"); err != nil {
+	name, err := flags.GetString("name")
+	if err != nil {
 		return nil, err
-	} else {
-		handlerFlags.Name = name
 	}
+	handlerFlags.Name = name
 
 	if err := h.validateHandlerFlags(handlerFlags); err != nil {
 		return nil, err

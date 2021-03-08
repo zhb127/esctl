@@ -11,7 +11,7 @@ func newRawLogger(config HelperConfig) (*zerolog.Logger, error) {
 	var logger zerolog.Logger
 
 	// 设置日志输出格式
-	if config.LogFormat != LOG_FORMAT_JSON {
+	if config.LogFormat != LogFormatJSON {
 		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr})
 	} else {
 		logger = zerolog.New(os.Stdout)
@@ -20,7 +20,7 @@ func newRawLogger(config HelperConfig) (*zerolog.Logger, error) {
 	withDefaultFields := logger.With().Timestamp()
 
 	// 设置是否输出文件路径、行号
-	if config.LogLevel == LOG_LEVEL_ALL {
+	if config.LogLevel == LogLevelAll {
 		// 由于封装的缘故，这个需要跳过前面 3 个帧
 		withDefaultFields = withDefaultFields.CallerWithSkipFrameCount(3)
 	}
@@ -28,21 +28,21 @@ func newRawLogger(config HelperConfig) (*zerolog.Logger, error) {
 	logger = withDefaultFields.Logger()
 
 	switch config.LogLevel {
-	case LOG_LEVEL_ALL:
+	case LogLevelAll:
 		logger = logger.Level(zerolog.NoLevel)
-	case LOG_LEVEL_DEBUG:
+	case LogLevelDebug:
 		logger = logger.Level(zerolog.DebugLevel)
-	case LOG_LEVEL_INFO:
+	case LogLevelInfo:
 		logger = logger.Level(zerolog.InfoLevel)
-	case LOG_LEVEL_WARN:
+	case LogLevelWarn:
 		logger = logger.Level(zerolog.WarnLevel)
-	case LOG_LEVEL_ERROR:
+	case LogLevelError:
 		logger = logger.Level(zerolog.ErrorLevel)
-	case LOG_LEVEL_FATAL:
+	case LogLevelFatal:
 		logger = logger.Level(zerolog.FatalLevel)
-	case LOG_LEVEL_PANIC:
+	case LogLevelPanic:
 		logger = logger.Level(zerolog.PanicLevel)
-	case LOG_LEVEL_NONE:
+	case LogLevelNone:
 		logger = logger.Level(zerolog.Disabled)
 	default:
 		return nil, errors.Errorf("config.LogLevel=%s is invalid", config.LogLevel)

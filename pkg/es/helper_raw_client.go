@@ -83,8 +83,8 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 		reqBodyStr := ""
 
 		// 只记录查询请求体
-		reqUrl := req.URL.String()
-		if strings.ContainsAny(reqUrl, "/_search") {
+		reqURL := req.URL.String()
+		if strings.ContainsAny(reqURL, "/_search") {
 			if req.Body != nil && req.Body != http.NoBody {
 				reqBodyStr = tostr.FromIOReadCloser(req.Body)
 			}
@@ -97,7 +97,6 @@ func (l *goESClientLogger) LogRoundTrip(req *http.Request, resp *http.Response, 
 			"url":    req.URL.String(),
 			"body":   reqBodyStr,
 		}
-
 	}
 
 	if resp != nil {

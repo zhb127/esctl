@@ -38,7 +38,7 @@ func NewService(logHelper log.IHelper, esHelper es.IHelper) IService {
 
 // 初始化迁移历史仓库
 func (s *service) InitMigrationHistoryRepo() error {
-	esIndexName := migrate.MIGRATION_HISTORY_ES_INDEX_NAME
+	esIndexName := migrate.MigrationHistoryESIndexName
 
 	listResp, err := s.esHelper.ListIndices(esIndexName)
 	if err != nil {
@@ -49,7 +49,7 @@ func (s *service) InitMigrationHistoryRepo() error {
 		return nil
 	}
 
-	esIndexBody := migrate.MIGRATION_HISTORY_ES_INDEX_BODY
+	esIndexBody := migrate.MigrationHistoryESIndexBody
 	_, err = s.esHelper.CreateIndex(esIndexName, esIndexBody)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (s *service) InitMigrationHistoryRepo() error {
 
 // 保存迁移历史条目
 func (s *service) SaveMigrationHistoryEntry(name string) error {
-	esIndexName := migrate.MIGRATION_HISTORY_ES_INDEX_NAME
+	esIndexName := migrate.MigrationHistoryESIndexName
 	esDocID := name
 	esDocBody := []byte(fmt.Sprintf(`{"name":"%s"}`, name))
 	if err := s.esHelper.SaveDoc(esIndexName, esDocID, esDocBody); err != nil {
@@ -72,7 +72,7 @@ func (s *service) SaveMigrationHistoryEntry(name string) error {
 
 // 删除迁移历史条目
 func (s *service) DeleteMigrationHistoryEntry(name string) error {
-	esIndexName := migrate.MIGRATION_HISTORY_ES_INDEX_NAME
+	esIndexName := migrate.MigrationHistoryESIndexName
 	esDocID := name
 	if err := s.esHelper.DeleteDoc(esIndexName, esDocID); err != nil {
 		return err
@@ -83,7 +83,7 @@ func (s *service) DeleteMigrationHistoryEntry(name string) error {
 
 // 获取最后执行的迁移名称
 func (s *service) GetUpMigrationNameLastExecuted() (string, error) {
-	esIndexName := migrate.MIGRATION_HISTORY_ES_INDEX_NAME
+	esIndexName := migrate.MigrationHistoryESIndexName
 	esSearchBody := []byte(`{"sort":[{"_id":{"order":"desc"}}],"size":1}`)
 	listResp, err := s.esHelper.ListDocs(esIndexName, esSearchBody)
 	if err != nil {
@@ -118,7 +118,7 @@ func (s *service) ListUpMigrationFileNames(dir string) ([]string, error) {
 	var res []string
 	for _, file := range files {
 		fName := file.Name()
-		if strings.HasSuffix(fName, migrate.UP_MIGRATION_FILE_SUFFIX) {
+		if strings.HasSuffix(fName, migrate.UpMigrationFileSuffix) {
 			res = append(res, fName)
 		}
 	}
