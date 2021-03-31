@@ -25,7 +25,8 @@ type IHelper interface {
 	Info() (*InfoResp, error)
 	SaveDoc(indexName string, docID string, docBody []byte) error
 	DeleteDoc(indexName string, docID string) error
-	ListDocs(indexName string, searchBody []byte) (*ListDocsResp, error)
+	DeleteDocsByQuery(indexName string, queryBody []byte) error
+	ListDocs(indexName string, queryBody []byte) (*ListDocsResp, error)
 	ListIndices(indexNameWildcardExps ...string) (*ListIndicesResp, error)
 	CreateIndex(indexName string, indexBody []byte) (*CreateIndexResp, error)
 	DeleteIndices(indexNames ...string) (*DeleteIndexResp, error)
@@ -114,11 +115,23 @@ func (h *helper) DeleteDoc(indexName string, docID string) error {
 	return nil
 }
 
-func (h *helper) ListDocs(indexName string, searchBody []byte) (*ListDocsResp, error) {
+func (h *helper) DeleteDocsByQuery(indexName string, queryBody []byte) error {
+	resp, err := h.rawClient.DeleteByQuery([]string{indexName}, bytes.NewReader(queryBody))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.IsError() {
+		return errors.New(resp.String())
+	}
+	return nil
+}
+
+func (h *helper) ListDocs(indexName string, queryBody []byte) (*ListDocsResp, error) {
 	resp, err := h.rawClient.Search(
 		h.rawClient.Search.WithIndex(indexName),
 		h.rawClient.Search.WithTrackTotalHits(true),
-		h.rawClient.Search.WithBody(bytes.NewReader(searchBody)),
+		h.rawClient.Search.WithBody(bytes.NewReader(queryBody)),
 	)
 	if err != nil {
 		return nil, err
