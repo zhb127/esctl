@@ -41,7 +41,5 @@ func init() {
 	}
 
 	flags.StringP("query", "q", "", "Query DSL json string")
-	if err := cobra.MarkFlagRequired(flags, "query"); err != nil {
-		infra.LogHelper.Fatal(err.Error(), nil)
-	}
+	flags.BoolP("all", "a", false, "Query all documents")
 }

@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"errors"
 	"esctl/internal/app"
 	"esctl/pkg/es"
 	"esctl/pkg/log"
@@ -51,6 +52,21 @@ func (h *handler) ParseCmdFlags(cmdFlags *pflag.FlagSet) (*HandlerFlags, error) 
 		return nil, err
 	}
 	handlerFlags.Query = query
+
+	if handlerFlags.Query == "" {
+		all, err := cmdFlags.GetBool("all")
+		if err != nil {
+			return nil, err
+		}
+
+		if !all {
+			return nil, errors.New("--query, --all should be set one")
+		}
+
+		if all {
+			handlerFlags.Query = `{"query":{"match_all":{}}}`
+		}
+	}
 
 	return handlerFlags, nil
 }
